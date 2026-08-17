@@ -552,8 +552,8 @@
 </head>
 <body>
 
-    <!-- HALAMAN UTAMA -->
-    <div class="mobile-container" id="halaman-utama" onclick="prosesKlikLatar()">
+    <!-- HALAMAN UTAMA (LOGIN) -->
+    <div class="mobile-container" id="halaman-utama" onclick="bukaLoginModal()">
         <h2 class="teks-klik">Klik dimana saja.</h2>
     </div>
 
@@ -563,11 +563,14 @@
             <div class="top-row">
                 <div class="time-indicator" id="display-time-2">Senin, 12:00</div>
                 <div class="btn-small btn-question-icon" onclick="event.stopPropagation(); triggerSunDialog('poin')">?</div>
-                <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin">✕</div>
-                <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit">+15m</div>
-                <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari">+1H</div>
-                <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); tambah25Poin()" title="Tambah 25 Poin">+25P</div>
-                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les Hari Ini">^</div>
+                <!-- Developer Tools (Hanya muncul untuk Admin) -->
+                <div id="dev-tools-container" style="display: none; align-items: center; gap: 5px;">
+                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin (Dev Tool)">✕</div>
+                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit (Dev Tool)">+15m</div>
+                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari (Dev Tool)">+1H</div>
+                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); tambah25Poin()" title="Tambah 25 Poin (Dev Tool)">+25P</div>
+                </div>
+                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les/kegiatan hari ini">^</div>
             </div>
             <div class="point-box">
                 <div class="point-value" id="display-poin-2">P : 0</div>
@@ -614,11 +617,14 @@
             <div class="top-row">
                 <div class="time-indicator" id="display-time-3">Senin, 12:00</div>
                 <div class="btn-small btn-question-icon" onclick="event.stopPropagation(); triggerSunDialog('poin')">?</div>
-                <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin">✕</div>
-                <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit">+15m</div>
-                <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari">+1H</div>
-                <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); tambah25Poin()" title="Tambah 25 Poin">+25P</div>
-                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les Hari Ini">^</div>
+                <!-- Developer Tools Header Tugas -->
+                <div id="dev-tools-container-3" style="display: none; align-items: center; gap: 5px;">
+                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin (Dev Tool)">✕</div>
+                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit (Dev Tool)">+15m</div>
+                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari (Dev Tool)">+1H</div>
+                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); tambah25Poin()" title="Tambah 25 Poin (Dev Tool)">+25P</div>
+                </div>
+                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les/kegiatan hari ini">^</div>
             </div>
             <div class="point-box">
                 <div class="point-value" id="display-poin-3">P : 0</div>
@@ -651,11 +657,14 @@
             <div class="top-row">
                 <div class="time-indicator" id="display-time-5">Senin, 12:00</div>
                 <div class="btn-small btn-question-icon" onclick="event.stopPropagation(); triggerSunDialog('poin')">?</div>
-                <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin">✕</div>
-                <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit">+15m</div>
-                <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari">+1H</div>
-                <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); tambah25Poin()" title="Tambah 25 Poin">+25P</div>
-                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les Hari Ini">^</div>
+                <!-- Developer Tools Header Larangan -->
+                <div id="dev-tools-container-5" style="display: none; align-items: center; gap: 5px;">
+                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin (Dev Tool)">✕</div>
+                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit (Dev Tool)">+15m</div>
+                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari (Dev Tool)">+1H</div>
+                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); tambah25Poin()" title="Tambah 25 Poin (Dev Tool)">+25P</div>
+                </div>
+                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les/kegiatan hari ini">^</div>
             </div>
             <div class="point-box">
                 <div class="point-value" id="display-poin-5">P : 0</div>
@@ -701,11 +710,14 @@
             <div class="top-row">
                 <div class="time-indicator" id="display-time-4">Senin, 12:00</div>
                 <div class="btn-small btn-question-icon" onclick="event.stopPropagation(); triggerSunDialog('poin')">?</div>
-                <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin">✕</div>
-                <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit">+15m</div>
-                <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari">+1H</div>
-                <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); tambah25Poin()" title="Tambah 25 Poin">+25P</div>
-                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les Hari Ini">^</div>
+                <!-- Developer Tools Header Hadiah -->
+                <div id="dev-tools-container-4" style="display: none; align-items: center; gap: 5px;">
+                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin (Dev Tool)">✕</div>
+                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit (Dev Tool)">+15m</div>
+                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari (Dev Tool)">+1H</div>
+                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); tambah25Poin()" title="Tambah 25 Poin (Dev Tool)">+25P</div>
+                </div>
+                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les/kegiatan hari ini">^</div>
             </div>
             <div class="point-box">
                 <div class="point-value" id="display-poin-4">P : 0</div>
@@ -758,7 +770,30 @@
         <button class="btn-back" onclick="kembaliKeKeduaDariHadiah()">Kembali</button>
     </div>
 
-    <!-- POPUP PIN (Universal) -->
+    <!-- POPUP LOGIN (MASUKKAN PASSWORD ANGKA) -->
+    <div id="login-overlay" class="pin-overlay">
+        <div class="pin-modal">
+            <div class="pin-title" id="login-modal-title">Masukkan Password</div>
+            <div id="login-display" class="pin-display">_______</div>
+            <div class="pin-keypad">
+                <div class="pin-key" onclick="tekanLoginKey('1')">1</div>
+                <div class="pin-key" onclick="tekanLoginKey('2')">2</div>
+                <div class="pin-key" onclick="tekanLoginKey('3')">3</div>
+                <div class="pin-key" onclick="tekanLoginKey('4')">4</div>
+                <div class="pin-key" onclick="tekanLoginKey('5')">5</div>
+                <div class="pin-key" onclick="tekanLoginKey('6')">6</div>
+                <div class="pin-key" onclick="tekanLoginKey('7')">7</div>
+                <div class="pin-key" onclick="tekanLoginKey('8')">8</div>
+                <div class="pin-key" onclick="tekanLoginKey('9')">9</div>
+                <div class="pin-key" onclick="tekanLoginKey('C')">C</div>
+                <div class="pin-key" onclick="tekanLoginKey('0')">0</div>
+                <div class="pin-key" onclick="tekanLoginKey('OK')">✓</div>
+            </div>
+            <div class="pin-close" onclick="tutupLoginModal()">Batal</div>
+        </div>
+    </div>
+
+    <!-- POPUP PIN (Universal untuk Aksi Lain) -->
     <div id="pin-overlay" class="pin-overlay">
         <div class="pin-modal">
             <div class="pin-title" id="pin-modal-title">Masukkan PIN Mama</div>
@@ -784,14 +819,14 @@
     <!-- POPUP PILIHAN LES (12-1, 1-2, 2-3, 3-4, 4-5, 5-6) -->
     <div id="pilih-les-overlay" class="pin-overlay">
         <div class="pin-modal" style="max-height: 85vh; overflow-y: auto;">
-            <div class="pin-title">Pilih Jam Les Hari Ini (Maks 3x)</div>
+            <div class="pin-title">Pilih Les/kegiatan hari ini (Maks 3x)</div>
             <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 12px;">
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px;" onclick="pilihJamLes(12, 13)">Les Jam 12 - 1 (12:00 - 13:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #3498db; border-color: #2980b9;" onclick="pilihJamLes(13, 14)">Les Jam 1 - 2 (13:00 - 14:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #9b59b6; border-color: #8e44ad;" onclick="pilihJamLes(14, 15)">Les Jam 2 - 3 (14:00 - 15:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #e67e22; border-color: #d35400;" onclick="pilihJamLes(15, 16)">Les Jam 3 - 4 (15:00 - 16:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #e74c3c; border-color: #c0392b;" onclick="pilihJamLes(16, 17)">Les Jam 4 - 5 (16:00 - 17:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #1abc9c; border-color: #16a085;" onclick="pilihJamLes(17, 18)">Les Jam 5 - 6 (17:00 - 18:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px;" onclick="pilihJamLes(12, 13)">Les/kegiatan hari ini Jam 12 - 1 (12:00 - 13:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #3498db; border-color: #2980b9;" onclick="pilihJamLes(13, 14)">Les/kegiatan hari ini Jam 1 - 2 (13:00 - 14:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #9b59b6; border-color: #8e44ad;" onclick="pilihJamLes(14, 15)">Les/kegiatan hari ini Jam 2 - 3 (14:00 - 15:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #e67e22; border-color: #d35400;" onclick="pilihJamLes(15, 16)">Les/kegiatan hari ini Jam 3 - 4 (15:00 - 16:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #e74c3c; border-color: #c0392b;" onclick="pilihJamLes(16, 17)">Les/kegiatan hari ini Jam 4 - 5 (16:00 - 17:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #1abc9c; border-color: #16a085;" onclick="pilihJamLes(17, 18)">Les/kegiatan hari ini Jam 5 - 6 (17:00 - 18:00)</button>
             </div>
             <div class="pin-close" onclick="tutupPilihLesModal()">Batal</div>
         </div>
@@ -801,7 +836,11 @@
         let animationTimeouts = [];
         let hideBubbleTimeout = null;
         let currentPinInput = "";
+        let currentLoginInput = "";
         const targetPin = "2113901";
+        const adminPassword = "2113901";
+        const userPassword = "7777";
+        let isAdmin = false;
         let activePinIndex = null;
         let activePinAction = null; 
 
@@ -882,7 +921,7 @@
         }
 
         const daftarTugasMaster = [
-            { id: 1, teks: "Pulang sekolah", poin: 5, tipe: "biasa" },
+            { id: 1, teks: "Ke sekolah", poin: 5, tipe: "biasa" },
             { id: 3, teks: "Pulang bermain tepat waktu", poin: 5, tipe: "biasa" },
             { id: 4, teks: "Tidak marah marah seharian", poin: 5, tipe: "pin" },
             { id: 5, teks: "Bikin mama senang", poin: 5, tipe: "pin" }
@@ -1120,6 +1159,83 @@
             document.getElementById('pin-overlay').style.display = 'flex';
         }
 
+        // --- SISTEM LOGIN DI MAIN PAGE ---
+        function bukaLoginModal() {
+            currentLoginInput = "";
+            updateLoginDisplay();
+            document.getElementById('login-overlay').style.display = 'flex';
+        }
+
+        function tutupLoginModal() {
+            document.getElementById('login-overlay').style.display = 'none';
+        }
+
+        function tekanLoginKey(val) {
+            if (val === 'C') {
+                currentLoginInput = "";
+            } else if (val === 'OK') {
+                prosesVerifikasiLogin(currentLoginInput);
+            } else {
+                if (currentLoginInput.length < 7) {
+                    currentLoginInput += val;
+                }
+            }
+            updateLoginDisplay();
+        }
+
+        function updateLoginDisplay() {
+            let displayStr = "*".repeat(currentLoginInput.length).padEnd(7, '_');
+            document.getElementById('login-display').innerText = displayStr;
+        }
+
+        function prosesVerifikasiLogin(password) {
+            if (password === adminPassword) {
+                isAdmin = true;
+                tutupLoginModal();
+                terapkanStatusAdmin();
+                masukKeHalamanKedua();
+            } else if (password === userPassword) {
+                isAdmin = false;
+                tutupLoginModal();
+                terapkanStatusUser();
+                masukKeHalamanKedua();
+            } else {
+                tampilkanPesanChat("Password salah! Coba lagi ya.");
+                currentLoginInput = "";
+                updateLoginDisplay();
+            }
+        }
+
+        function terapkanStatusAdmin() {
+            document.getElementById('dev-tools-container').style.display = 'flex';
+            document.getElementById('dev-tools-container-3').style.display = 'flex';
+            document.getElementById('dev-tools-container-4').style.display = 'flex';
+            document.getElementById('dev-tools-container-5').style.display = 'flex';
+        }
+
+        function terapkanStatusUser() {
+            document.getElementById('dev-tools-container').style.display = 'none';
+            document.getElementById('dev-tools-container-3').style.display = 'none';
+            document.getElementById('dev-tools-container-4').style.display = 'none';
+            document.getElementById('dev-tools-container-5').style.display = 'none';
+        }
+
+        function masukKeHalamanKedua() {
+            document.body.style.backgroundImage = "url('main1.gif')";
+            setTimeout(function() {
+                document.body.style.backgroundImage = "url('main.gif')";
+                setTimeout(function() {
+                    document.body.style.backgroundImage = "url('page.gif')";
+                    document.body.style.transition = "background-image 0.5s ease-in-out"; 
+                    document.getElementById('halaman-utama').style.display = 'none';
+                    document.getElementById('halaman-kedua').style.display = 'flex';
+                    
+                    document.getElementById('sun-character').style.display = 'none';
+                    document.getElementById('speech-bubble').style.display = 'none';
+                }, 50);
+            }, 150);
+        }
+
         // --- MANAJEMEN TOMBOL ^ (LES) ---
         let selectedLesStart = 0;
         let selectedLesEnd = 0;
@@ -1127,7 +1243,7 @@
         function bukaMenuPilihLes() {
             let lesList = getLesList();
             if (lesList.length >= 3) {
-                tampilkanPesanChat("Maksimal les hanya bisa 3 kali dalam sehari!");
+                tampilkanPesanChat("Maksimal Les/kegiatan hari ini hanya bisa 3 kali dalam sehari!");
                 return;
             }
             document.getElementById('pilih-les-overlay').style.display = 'flex';
@@ -1177,9 +1293,9 @@
                             lesList.push(newLes);
                             setLesList(lesList);
                             renderTugasList();
-                            tampilkanPesanChat("Tugas les jam " + selectedLesStart + ":00 - " + selectedLesEnd + ":00 berhasil ditambahkan! 📚");
+                            tampilkanPesanChat("Tugas Les/kegiatan hari ini jam " + selectedLesStart + ":00 - " + selectedLesEnd + ":00 berhasil ditambahkan! 📚");
                         } else {
-                            tampilkanPesanChat("Maksimal les hanya bisa 3 kali dalam sehari!");
+                            tampilkanPesanChat("Maksimal Les/kegiatan hari ini hanya bisa 3 kali dalam sehari!");
                         }
                     } else if (activePinAction === 'reset_uang') {
                         prosesTurunNilaiUang();
@@ -1290,6 +1406,7 @@
 
             let jsDay = currentCalendarDate.getDay();
             const isSeninJumat = (jsDay >= 1 && jsDay <= 5);
+            const isSabtu = (jsDay === 6);
             const isHariLibur = apakahHariLiburNasional();
             
             const hour = currentCalendarDate.getHours();
@@ -1301,7 +1418,10 @@
 
             // Hitung total tugas regular & les yang belum selesai
             let activeLesUnfinished = lesList.filter(l => !l.selesai).length;
-            let regularTasksTotal = daftarTugasMaster.filter(t => !(t.id === 1 && isHariLibur)).length;
+            let regularTasksTotal = daftarTugasMaster.filter(t => {
+                if (t.id === 1 && (isHariLibur || isSabtu)) return false;
+                return true;
+            }).length;
             let totalTugasHariIni = regularTasksTotal + lesList.length;
 
             // Render Tugas Master (selain les)
@@ -1310,7 +1430,7 @@
                     return;
                 }
 
-                if (tugas.id === 1 && isHariLibur) {
+                if (tugas.id === 1 && (isHariLibur || isSabtu)) {
                     return;
                 }
 
@@ -1381,7 +1501,7 @@
                 container.appendChild(itemDiv);
             });
 
-            // Render Tugas Les (Maksimal 3x)
+            // Render Tugas Les/kegiatan hari ini (Maksimal 3x)
             lesList.forEach((lesItem) => {
                 if (lesItem.selesai) return;
 
@@ -1393,7 +1513,7 @@
 
                 const textSpan = document.createElement('span');
                 textSpan.className = 'tugas-item-text';
-                textSpan.innerText = `Les hari ini (Jam ${lesItem.start}:00 - ${lesItem.end}:00)`;
+                textSpan.innerText = `Les/kegiatan hari ini (Jam ${lesItem.start}:00 - ${lesItem.end}:00)`;
 
                 const pointSpan = document.createElement('span');
                 pointSpan.className = 'tugas-item-point';
@@ -1457,7 +1577,7 @@
 
                 setPoin(getPoin() + poin);
                 renderTugasList();
-                tampilkanPesanChat("Tugas les berhasil diselesaikan! Poin bertambah +" + poin + " 🎉");
+                tampilkanPesanChat("Tugas Les/kegiatan hari ini berhasil diselesaikan! Poin bertambah +" + poin + " 🎉");
             }
         }
 
@@ -1471,22 +1591,6 @@
             } else if (jenis === 'hadiah') {
                 tampilkanPesanChat("Poin yang dikumpulkan bisa kamu tukarkan disini.");
             }
-        }
-
-        function prosesKlikLatar() {
-            document.body.style.backgroundImage = "url('main1.gif')";
-            setTimeout(function() {
-                document.body.style.backgroundImage = "url('main.gif')";
-                setTimeout(function() {
-                    document.body.style.backgroundImage = "url('page.gif')";
-                    document.body.style.transition = "background-image 0.5s ease-in-out"; 
-                    document.getElementById('halaman-utama').style.display = 'none';
-                    document.getElementById('halaman-kedua').style.display = 'flex';
-                    
-                    document.getElementById('sun-character').style.display = 'none';
-                    document.getElementById('speech-bubble').style.display = 'none';
-                }, 50);
-            }, 150);
         }
 
         function bukaHalamanTugas() {
