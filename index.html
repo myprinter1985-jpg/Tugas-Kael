@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Point Kael</title>
     
+    <!-- Firebase SDK Compat (Realtime Database) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
     
     <style>
@@ -816,7 +820,7 @@
         </div>
     </div>
 
-    <!-- POPUP PILIHAN LES (12-1, 1-2, 2-3, 3-4, 4-5, 5-6) -->
+    <!-- POPUP PILIHAN LES -->
     <div id="pilih-les-overlay" class="pin-overlay">
         <div class="pin-modal" style="max-height: 85vh; overflow-y: auto;">
             <div class="pin-title">Pilih Les/kegiatan hari ini (Maks 3x)</div>
@@ -833,6 +837,47 @@
     </div>
 
     <script>
+        // --- KONFIGURASI FIREBASE ANDA ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCDJmLX3P6tOAIOc5qzzgctN1P3HeQTSM",
+            authDomain: "sistempoinkael.firebaseapp.com",
+            databaseURL: "https://sistempoinkael-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "sistempoinkael",
+            storageBucket: "sistempoinkael.firebasestorage.app",
+            messagingSenderId: "435442476642",
+            appId: "1:435442476642:web:6ecdaae006e04ee3c9933b",
+            measurementId: "G-B7CRRNL5MF"
+        };
+
+        // Inisialisasi Firebase Compat
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // State / Variabel Online Real-time
+        let poinState = 0;
+        let uangAkumulasiState = 0;
+        let mallDibeliState = false;
+        let selesaiListState = [];
+        let lesListState = [];
+        let bonusClaimedState = false;
+
+        // Sinkronisasi Real-time dari Firebase Database
+        db.ref('kael_data').on('value', (snapshot) => {
+            let data = snapshot.val() || {};
+            poinState = data.poin || 0;
+            uangAkumulasiState = data.uang_akumulasi || 0;
+            mallDibeliState = data.mall_dibeli === true;
+            selesaiListState = data.selesai || [];
+            lesListState = data.les_list || [];
+            bonusClaimedState = data.bonus_claimed === true;
+
+            updatePoinDisplay();
+            updateTampilanHadiah();
+            if (document.getElementById('halaman-tugas').style.display === 'flex') {
+                renderTugasList();
+            }
+        });
+
         let animationTimeouts = [];
         let hideBubbleTimeout = null;
         let currentPinInput = "";
@@ -844,27 +889,14 @@
         let activePinIndex = null;
         let activePinAction = null; 
 
-        // Daftar Hari Libur Nasional / Tanggal Merah Indonesia Resmi
         const daftarHariLiburNasional = [
-            "2026-01-01",
-            "2026-01-27",
-            "2026-02-17",
-            "2026-03-19",
-            "2026-03-20",
-            "2026-03-21",
-            "2026-04-03",
-            "2026-05-01",
-            "2026-05-14",
-            "2026-05-27",
-            "2026-06-01",
-            "2026-06-16",
-            "2026-08-17",
-            "2026-08-25",
-            "2026-12-25"
+            "2026-01-01", "2026-01-27", "2026-02-17", "2026-03-19",
+            "2026-03-20", "2026-03-21", "2026-04-03", "2026-05-01",
+            "2026-05-14", "2026-05-27", "2026-06-01", "2026-06-16",
+            "2026-08-17", "2026-08-25", "2026-12-25"
         ];
 
         let currentCalendarDate = new Date();
-
         const namaHariFull = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
         const namaBulanFull = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
 
@@ -880,35 +912,28 @@
         function apakahHariLiburNasional() {
             let jsDay = currentCalendarDate.getDay();
             if (jsDay === 0) return true;
-
             let year = currentCalendarDate.getFullYear();
             let month = String(currentCalendarDate.getMonth() + 1).padStart(2, '0');
             let day = String(currentCalendarDate.getDate()).padStart(2, '0');
-            let dateString = `${year}-${month}-${day}`;
-
-            return daftarHariLiburNasional.includes(dateString);
+            return daftarHariLiburNasional.includes(`${year}-${month}-${day}`);
         }
 
         function tambahWaktu15Menit() {
             currentCalendarDate.setMinutes(currentCalendarDate.getMinutes() + 15);
-            cekResetHarianOtomatis();
             updateTimeDisplays();
             renderTugasList();
         }
 
         function tambah1Hari() {
             currentCalendarDate.setDate(currentCalendarDate.getDate() + 1);
-            cekResetHarianOtomatis();
             updateTimeDisplays();
             renderTugasList();
-            
             let statusLiburPesan = apakahHariLiburNasional() ? " (Hari Libur / Tanggal Merah!)" : "";
             tampilkanPesanChat("Tanggal berganti menjadi " + getFormattedDateString().split(',')[0] + "!" + statusLiburPesan);
         }
 
         function tambah25Poin() {
-            let currentPoin = getPoin();
-            setPoin(currentPoin + 25);
+            setPoin(getPoin() + 25);
             tampilkanPesanChat("Poin berhasil ditambah +25 🎉");
         }
 
@@ -927,73 +952,20 @@
             { id: 5, teks: "Bikin mama senang", poin: 5, tipe: "pin" }
         ];
 
-        function getTodayDateKey() {
-            let y = currentCalendarDate.getFullYear();
-            let m = currentCalendarDate.getMonth() + 1;
-            let d = currentCalendarDate.getDate();
-            return `date_${y}_${m}_${d}`;
-        }
+        function getPoin() { return poinState; }
+        function setPoin(val) { db.ref('kael_data').update({ poin: val }); }
 
-        function cekResetHarianOtomatis() {
-            let savedDateKey = localStorage.getItem('kael_last_date_key');
-            let todayKey = getTodayDateKey();
+        function getTugasSelesaiList() { return selesaiListState; }
+        function setTugasSelesaiList(list) { db.ref('kael_data').update({ selesai: list }); }
 
-            if (savedDateKey !== todayKey) {
-                localStorage.setItem('kael_last_date_key', todayKey);
-                localStorage.setItem('kael_selesai', JSON.stringify([]));
-                localStorage.setItem('kael_les_list', JSON.stringify([])); 
-                localStorage.setItem('kael_bonus_claimed', 'false');
-            }
-        }
+        function getLesList() { return lesListState; }
+        function setLesList(list) { db.ref('kael_data').update({ les_list: list }); }
 
-        function loadAppData() {
-            if (!localStorage.getItem('kael_last_date_key')) {
-                localStorage.setItem('kael_last_date_key', getTodayDateKey());
-                if (!localStorage.getItem('kael_poin')) {
-                    localStorage.setItem('kael_poin', '0');
-                }
-                localStorage.setItem('kael_selesai', JSON.stringify([]));
-                localStorage.setItem('kael_les_list', JSON.stringify([]));
-                localStorage.setItem('kael_bonus_claimed', 'false');
-            }
-            cekResetHarianOtomatis();
-        }
+        function getAkumulasiUang() { return uangAkumulasiState; }
+        function setAkumulasiUang(val) { db.ref('kael_data').update({ uang_akumulasi: val }); }
 
-        loadAppData();
-
-        function getPoin() {
-            return parseInt(localStorage.getItem('kael_poin')) || 0;
-        }
-
-        function setPoin(val) {
-            localStorage.setItem('kael_poin', val);
-            updatePoinDisplay();
-            updateTampilanHadiah();
-        }
-
-        function getTugasSelesaiList() {
-            try {
-                return JSON.parse(localStorage.getItem('kael_selesai')) || [];
-            } catch(e) {
-                return [];
-            }
-        }
-
-        function setTugasSelesaiList(list) {
-            localStorage.setItem('kael_selesai', JSON.stringify(list));
-        }
-
-        function getLesList() {
-            try {
-                return JSON.parse(localStorage.getItem('kael_les_list')) || [];
-            } catch(e) {
-                return [];
-            }
-        }
-
-        function setLesList(list) {
-            localStorage.setItem('kael_les_list', JSON.stringify(list));
-        }
+        function getStatusMall() { return mallDibeliState; }
+        function setStatusMall(status) { db.ref('kael_data').update({ mall_dibeli: status }); }
 
         function updatePoinDisplay() {
             let p = getPoin();
@@ -1001,26 +973,6 @@
             document.getElementById('display-poin-3').innerText = "P : " + p;
             document.getElementById('display-poin-4').innerText = "P : " + p;
             document.getElementById('display-poin-5').innerText = "P : " + p;
-        }
-
-        updatePoinDisplay();
-        updateTimeDisplays();
-
-        // --- MANAJEMEN HADIAH ---
-        function getAkumulasiUang() {
-            return parseInt(localStorage.getItem('kael_uang_akumulasi')) || 0;
-        }
-
-        function setAkumulasiUang(val) {
-            localStorage.setItem('kael_uang_akumulasi', val);
-        }
-
-        function getStatusMall() {
-            return localStorage.getItem('kael_mall_dibeli') === 'true';
-        }
-
-        function setStatusMall(status) {
-            localStorage.setItem('kael_mall_dibeli', status);
         }
 
         function updateTampilanHadiah() {
@@ -1071,18 +1023,15 @@
                 tampilkanPesanChat("Hadiah uang sudah mencapai batas maksimal Rp 200.000!");
                 return;
             }
-
             let poinSkrg = getPoin();
-            let biaya = 50;
-            if (poinSkrg >= biaya) {
-                setPoin(poinSkrg - biaya);
+            if (poinSkrg >= 50) {
+                setPoin(poinSkrg - 50);
                 currentUang += 50000;
                 if (currentUang > 200000) currentUang = 200000;
                 setAkumulasiUang(currentUang);
-                updateTampilanHadiah();
-                tampilkanPesanChat("Berhasil! Dapat Rp " + currentUang.toLocaleString('id-ID') + " (Maksimal Rp 200.000)");
+                tampilkanPesanChat("Berhasil! Dapat Rp " + currentUang.toLocaleString('id-ID'));
             } else {
-                tampilkanPesanChat("Poin kamu tidak cukup untuk menukar uang ini!");
+                tampilkanPesanChat("Poin kamu tidak cukup!");
             }
         }
 
@@ -1091,37 +1040,24 @@
                 tampilkanPesanChat("Hadiah ke mall hanya bisa diambil 1 kali!");
                 return;
             }
-
             let poinSkrg = getPoin();
-            let biaya = 100;
-            if (poinSkrg >= biaya) {
-                setPoin(poinSkrg - biaya);
+            if (poinSkrg >= 100) {
+                setPoin(poinSkrg - 100);
                 setStatusMall(true);
-                updateTampilanHadiah();
                 tampilkanPesanChat("Ada jadwal pergi ke mall!");
             } else {
-                tampilkanPesanChat("Poin kamu tidak cukup untuk menukar jadwal ke mall!");
+                tampilkanPesanChat("Poin kamu tidak cukup!");
             }
         }
 
         function prosesTurunNilaiUang() {
             let currentUang = getAkumulasiUang();
-            if (currentUang >= 200000) {
-                currentUang = 150000;
-            } else if (currentUang === 150000) {
-                currentUang = 100000;
-            } else if (currentUang === 100000) {
-                currentUang = 50000;
-            } else {
-                currentUang = 0;
-            }
+            if (currentUang >= 200000) currentUang = 150000;
+            else if (currentUang === 150000) currentUang = 100000;
+            else if (currentUang === 100000) currentUang = 50000;
+            else currentUang = 0;
             setAkumulasiUang(currentUang);
-            updateTampilanHadiah();
-            if (currentUang > 0) {
-                tampilkanPesanChat("Jumlah uang dikurangi menjadi Rp " + currentUang.toLocaleString('id-ID'));
-            } else {
-                tampilkanPesanChat("Notifikasi uang kembali ke kondisi awal!");
-            }
+            tampilkanPesanChat("Jumlah uang disesuaikan menjadi Rp " + currentUang.toLocaleString('id-ID'));
         }
 
         function bukaPinModalReset(jenis) {
@@ -1159,7 +1095,6 @@
             document.getElementById('pin-overlay').style.display = 'flex';
         }
 
-        // --- SISTEM LOGIN DI MAIN PAGE ---
         function bukaLoginModal() {
             currentLoginInput = "";
             updateLoginDisplay();
@@ -1176,9 +1111,7 @@
             } else if (val === 'OK') {
                 prosesVerifikasiLogin(currentLoginInput);
             } else {
-                if (currentLoginInput.length < 7) {
-                    currentLoginInput += val;
-                }
+                if (currentLoginInput.length < 7) currentLoginInput += val;
             }
             updateLoginDisplay();
         }
@@ -1229,14 +1162,12 @@
                     document.body.style.transition = "background-image 0.5s ease-in-out"; 
                     document.getElementById('halaman-utama').style.display = 'none';
                     document.getElementById('halaman-kedua').style.display = 'flex';
-                    
                     document.getElementById('sun-character').style.display = 'none';
                     document.getElementById('speech-bubble').style.display = 'none';
                 }, 50);
             }, 150);
         }
 
-        // --- MANAJEMEN TOMBOL ^ (LES) ---
         let selectedLesStart = 0;
         let selectedLesEnd = 0;
 
@@ -1257,7 +1188,6 @@
             selectedLesStart = startH;
             selectedLesEnd = endH;
             tutupPilihLesModal();
-
             activePinAction = 'tambah_les';
             currentPinInput = "";
             document.getElementById('pin-modal-title').innerText = "Masukkan PIN Mama";
@@ -1284,67 +1214,53 @@
                     } else if (activePinAction === 'tambah_les') {
                         let lesList = getLesList();
                         if (lesList.length < 3) {
-                            let newLes = {
-                                id: 'les_' + Date.now() + '_' + Math.random(),
+                            lesList.push({
+                                id: 'les_' + Date.now(),
                                 start: selectedLesStart,
                                 end: selectedLesEnd,
                                 selesai: false
-                            };
-                            lesList.push(newLes);
+                            });
                             setLesList(lesList);
                             renderTugasList();
-                            tampilkanPesanChat("Tugas Les/kegiatan hari ini jam " + selectedLesStart + ":00 - " + selectedLesEnd + ":00 berhasil ditambahkan! 📚");
-                        } else {
-                            tampilkanPesanChat("Maksimal Les/kegiatan hari ini hanya bisa 3 kali dalam sehari!");
+                            tampilkanPesanChat("Tugas Les berhasil ditambahkan! 📚");
                         }
                     } else if (activePinAction === 'reset_uang') {
                         prosesTurunNilaiUang();
                     } else if (activePinAction === 'reset_mall') {
                         setStatusMall(false);
-                        updateTampilanHadiah();
-                        tampilkanPesanChat("Status jadwal ke mall kembali ke kondisi awal!");
+                        tampilkanPesanChat("Status mall direset!");
                     }
                 } else {
-                    tampilkanPesanChat("PIN Salah! Coba lagi ya.");
+                    tampilkanPesanChat("PIN Salah!");
                     currentPinInput = "";
                 }
             } else {
-                if (currentPinInput.length < 7) {
-                    currentPinInput += val;
-                }
+                if (currentPinInput.length < 7) currentPinInput += val;
             }
             updatePinDisplay();
         }
 
         function updatePinDisplay() {
-            let displayStr = "*".repeat(currentPinInput.length).padEnd(7, '_');
-            document.getElementById('pin-display').innerText = displayStr;
+            document.getElementById('pin-display').innerText = "*".repeat(currentPinInput.length).padEnd(7, '_');
         }
 
         function pelanggaranLarangan(id) {
-            let currentPoin = getPoin();
-            setPoin(currentPoin - 1);
-            let namaLarangan = "";
-            if (id === 1) namaLarangan = "Pegang susu";
-            else if (id === 2) namaLarangan = "Ambil uang orang";
-            else if (id === 3) namaLarangan = "Disuap mama lebih 3x";
-            
-            tampilkanPesanChat("Melanggar larangan (" + namaLarangan + ")! Poin dikurangi -1 ❌");
+            setPoin(getPoin() - 1);
+            tampilkanPesanChat("Melanggar larangan! Poin dikurangi -1 ❌");
         }
 
         function resetPoin() {
             currentCalendarDate = new Date();
-            localStorage.setItem('kael_poin', '0');
-            localStorage.setItem('kael_selesai', JSON.stringify([]));
-            localStorage.setItem('kael_les_list', JSON.stringify([]));
-            localStorage.setItem('kael_uang_akumulasi', '0');
-            localStorage.setItem('kael_mall_dibeli', 'false');
-            localStorage.setItem('kael_bonus_claimed', 'false');
-            updatePoinDisplay();
+            db.ref('kael_data').set({
+                poin: 0,
+                selesai: [],
+                les_list: [],
+                uang_akumulasi: 0,
+                mall_dibeli: false,
+                bonus_claimed: false
+            });
             updateTimeDisplays();
-            updateTampilanHadiah();
-            renderTugasList();
-            tampilkanPesanChat("Kalender kembali ke waktu real, poin dan data direset!");
+            tampilkanPesanChat("Data berhasil direset online!");
         }
 
         function tampilkanPesanChat(pesan) {
@@ -1353,44 +1269,27 @@
             if (hideBubbleTimeout) clearTimeout(hideBubbleTimeout);
 
             let activePageId = 'halaman-kedua';
-            if (document.getElementById('halaman-tugas').style.display === 'flex') {
-                activePageId = 'halaman-tugas';
-            } else if (document.getElementById('halaman-hadiah').style.display === 'flex') {
-                activePageId = 'halaman-hadiah';
-            } else if (document.getElementById('halaman-larangan').style.display === 'flex') {
-                activePageId = 'halaman-larangan';
-            }
+            if (document.getElementById('halaman-tugas').style.display === 'flex') activePageId = 'halaman-tugas';
+            else if (document.getElementById('halaman-hadiah').style.display === 'flex') activePageId = 'halaman-hadiah';
+            else if (document.getElementById('halaman-larangan').style.display === 'flex') activePageId = 'halaman-larangan';
 
             const sunImgId = activePageId === 'halaman-tugas' ? 'sun-character-tugas' : (activePageId === 'halaman-hadiah' ? 'sun-character-hadiah' : (activePageId === 'halaman-larangan' ? 'sun-character-larangan' : 'sun-character'));
             const bubbleId = activePageId === 'halaman-tugas' ? 'speech-bubble-tugas' : (activePageId === 'halaman-hadiah' ? 'speech-bubble-hadiah' : (activePageId === 'halaman-larangan' ? 'speech-bubble-larangan' : 'speech-bubble'));
             const textId = activePageId === 'halaman-tugas' ? 'speech-text-tugas' : (activePageId === 'halaman-hadiah' ? 'speech-text-hadiah' : (activePageId === 'halaman-larangan' ? 'speech-text-larangan' : 'speech-text'));
 
-            document.getElementById('sun-character').style.display = 'none';
-            document.getElementById('speech-bubble').style.display = 'none';
-            document.getElementById('sun-character-tugas').style.display = 'none';
-            document.getElementById('speech-bubble-tugas').style.display = 'none';
-            document.getElementById('sun-character-hadiah').style.display = 'none';
-            document.getElementById('speech-bubble-hadiah').style.display = 'none';
-            document.getElementById('sun-character-larangan').style.display = 'none';
-            document.getElementById('speech-bubble-larangan').style.display = 'none';
+            document.querySelectorAll('.sun-character').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.speech-bubble').forEach(el => el.style.display = 'none');
 
             const sunImg = document.getElementById(sunImgId);
             const bubble = document.getElementById(bubbleId);
-            const speechText = document.getElementById(textId);
-
-            speechText.innerText = pesan;
+            document.getElementById(textId).innerText = pesan;
 
             sunImg.style.display = 'block';
             bubble.style.display = 'block';
             sunImg.src = 'sun.png';
 
-            animationTimeouts.push(setTimeout(() => {
-                sunImg.src = 'sun1.png';
-            }, 200));
-
-            animationTimeouts.push(setTimeout(() => {
-                sunImg.src = 'sun2.png';
-            }, 400));
+            animationTimeouts.push(setTimeout(() => { sunImg.src = 'sun1.png'; }, 200));
+            animationTimeouts.push(setTimeout(() => { sunImg.src = 'sun2.png'; }, 400));
 
             hideBubbleTimeout = setTimeout(() => {
                 bubble.style.display = 'none';
@@ -1399,7 +1298,6 @@
         }
 
         function renderTugasList() {
-            cekResetHarianOtomatis();
             const container = document.getElementById('container-list-tugas');
             const cardSelesai = document.getElementById('card-tugas-selesai');
             container.innerHTML = "";
@@ -1408,148 +1306,79 @@
             const isSeninJumat = (jsDay >= 1 && jsDay <= 5);
             const isSabtu = (jsDay === 6);
             const isHariLibur = apakahHariLiburNasional();
-            
-            const hour = currentCalendarDate.getHours();
-            const minute = currentCalendarDate.getMinutes();
-            const totalMins = hour * 60 + minute; 
+            const totalMins = currentCalendarDate.getHours() * 60 + currentCalendarDate.getMinutes(); 
 
             let selesaiList = getTugasSelesaiList();
             let lesList = getLesList();
 
-            // Hitung total tugas regular & les yang belum selesai
-            let activeLesUnfinished = lesList.filter(l => !l.selesai).length;
-            let regularTasksTotal = daftarTugasMaster.filter(t => {
-                if (t.id === 1 && (isHariLibur || isSabtu)) return false;
-                return true;
-            }).length;
+            let regularTasksTotal = daftarTugasMaster.filter(t => !(t.id === 1 && (isHariLibur || isSabtu))).length;
             let totalTugasHariIni = regularTasksTotal + lesList.length;
 
-            // Render Tugas Master (selain les)
             daftarTugasMaster.forEach((tugas) => {
-                if (selesaiList.includes(tugas.id)) {
-                    return;
-                }
-
-                if (tugas.id === 1 && (isHariLibur || isSabtu)) {
-                    return;
-                }
+                if (selesaiList.includes(tugas.id)) return;
+                if (tugas.id === 1 && (isHariLibur || isSabtu)) return;
 
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'tugas-item';
-
-                const topDiv = document.createElement('div');
-                topDiv.className = 'tugas-item-top';
-
-                const textSpan = document.createElement('span');
-                textSpan.className = 'tugas-item-text';
-                textSpan.innerText = tugas.teks;
-
-                const pointSpan = document.createElement('span');
-                pointSpan.className = 'tugas-item-point';
-                pointSpan.innerText = "+" + tugas.poin + " poin";
-
-                topDiv.appendChild(textSpan);
-                topDiv.appendChild(pointSpan);
-                itemDiv.appendChild(topDiv);
+                itemDiv.innerHTML = `
+                    <div class="tugas-item-top">
+                        <span class="tugas-item-text">${tugas.teks}</span>
+                        <span class="tugas-item-point">+${tugas.poin} poin</span>
+                    </div>
+                `;
 
                 let isHijau = false;
                 let isPinActive = true; 
 
-                if (tugas.id === 1) {
-                    if (isSeninJumat && !isHariLibur && totalMins >= 720 && totalMins <= 1440) {
-                        isHijau = true;
-                    }
-                } else if (tugas.id === 3) {
-                    if (totalMins >= 960 && totalMins <= 980) {
-                        isHijau = true;
-                    }
-                } else if (tugas.id === 4) {
-                    isHijau = false;
-                    if (totalMins >= 1080 && totalMins <= 1440) {
-                        isPinActive = true;
-                    } else {
-                        isPinActive = false;
-                    }
-                } else if (tugas.id === 5) {
-                    isHijau = false;
-                    isPinActive = true; 
-                }
+                if (tugas.id === 1 && isSeninJumat && !isHariLibur && totalMins >= 720 && totalMins <= 1440) isHijau = true;
+                else if (tugas.id === 3 && totalMins >= 960 && totalMins <= 980) isHijau = true;
+                else if (tugas.id === 4) isPinActive = (totalMins >= 1080 && totalMins <= 1440);
 
                 if (isHijau) {
                     itemDiv.classList.add('aktif-hijau');
-                    itemDiv.onclick = function() { selesaikanTugas(tugas.id, tugas.poin); };
+                    itemDiv.onclick = () => selesaikanTugas(tugas.id, tugas.poin);
                 } else {
-                    if (tugas.tipe === 'pin') {
-                        itemDiv.onclick = function() {
-                            if (isPinActive) {
-                                bukaPinModalTugas(tugas.id);
-                            } else {
-                                if (tugas.id === 4) {
-                                    tampilkanPesanChat("Tugas ini hanya bisa diisi PIN saat jam 6 sore sampai 12 malam!");
-                                } else {
-                                    tampilkanPesanChat("Tugas belum bisa diklik!");
-                                }
-                            }
-                        };
-                    } else {
-                        itemDiv.onclick = function() {
-                            tampilkanPesanChat("Tugas belum aktif / belum masuk waktu yang ditentukan!");
-                        };
-                    }
-                }
-
-                container.appendChild(itemDiv);
-            });
-
-            // Render Tugas Les/kegiatan hari ini (Maksimal 3x)
-            lesList.forEach((lesItem) => {
-                if (lesItem.selesai) return;
-
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'tugas-item';
-
-                const topDiv = document.createElement('div');
-                topDiv.className = 'tugas-item-top';
-
-                const textSpan = document.createElement('span');
-                textSpan.className = 'tugas-item-text';
-                textSpan.innerText = `Les/kegiatan hari ini (Jam ${lesItem.start}:00 - ${lesItem.end}:00)`;
-
-                const pointSpan = document.createElement('span');
-                pointSpan.className = 'tugas-item-point';
-                pointSpan.innerText = "+5 poin";
-
-                topDiv.appendChild(textSpan);
-                topDiv.appendChild(pointSpan);
-                itemDiv.appendChild(topDiv);
-
-                let startMins = lesItem.start * 60;
-                let endMins = lesItem.end * 60;
-                let isLesHijau = (totalMins >= startMins && totalMins <= endMins);
-
-                if (isLesHijau) {
-                    itemDiv.classList.add('aktif-hijau');
-                    itemDiv.onclick = function() { selesaikanLes(lesItem.id, 5); };
-                } else {
-                    itemDiv.onclick = function() {
-                        bukaPinModalLes(lesItem.id);
+                    itemDiv.onclick = () => {
+                        if (tugas.tipe === 'pin') {
+                            if (isPinActive) bukaPinModalTugas(tugas.id);
+                            else tampilkanPesanChat("Belum waktunya diisi PIN!");
+                        } else {
+                            tampilkanPesanChat("Tugas belum aktif!");
+                        }
                     };
                 }
-
                 container.appendChild(itemDiv);
             });
 
-            let updatedSelesaiList = getTugasSelesaiList();
-            let allLesFinished = lesList.length > 0 && lesList.every(l => l.selesai);
-            let allRegularFinished = updatedSelesaiList.length >= regularTasksTotal;
-            let bonusClaimed = localStorage.getItem('kael_bonus_claimed') === 'true';
+            lesList.forEach((lesItem) => {
+                if (lesItem.selesai) return;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'tugas-item';
+                itemDiv.innerHTML = `
+                    <div class="tugas-item-top">
+                        <span class="tugas-item-text">Les Jam ${lesItem.start}:00 - ${lesItem.end}:00</span>
+                        <span class="tugas-item-point">+5 poin</span>
+                    </div>
+                `;
+                let isLesHijau = (totalMins >= lesItem.start * 60 && totalMins <= lesItem.end * 60);
+                if (isLesHijau) {
+                    itemDiv.classList.add('aktif-hijau');
+                    itemDiv.onclick = () => selesaikanLes(lesItem.id, 5);
+                } else {
+                    itemDiv.onclick = () => bukaPinModalLes(lesItem.id);
+                }
+                container.appendChild(itemDiv);
+            });
+
+            let allLesFinished = lesList.length === 0 || lesList.every(l => l.selesai);
+            let allRegularFinished = selesaiList.length >= regularTasksTotal;
 
             if (totalTugasHariIni > 0 && allRegularFinished && allLesFinished) {
                 cardSelesai.style.display = 'block';
-                if (!bonusClaimed) {
-                    localStorage.setItem('kael_bonus_claimed', 'true');
+                if (!bonusClaimedState) {
+                    db.ref('kael_data').update({ bonus_claimed: true });
                     setPoin(getPoin() + 1);
-                    tampilkanPesanChat("Hebat! Semua tugas hari ini sudah selesai. Kamu mendapat tambahan +1 poin! 🎉");
+                    tampilkanPesanChat("Semua tugas selesai! Bonus +1 poin 🎉");
                 }
             } else {
                 cardSelesai.style.display = 'none';
@@ -1561,10 +1390,9 @@
             if (!selesaiList.includes(id)) {
                 selesaiList.push(id);
                 setTugasSelesaiList(selesaiList);
-
                 setPoin(getPoin() + poin);
                 renderTugasList();
-                tampilkanPesanChat("Tugas berhasil diselesaikan! Poin bertambah +" + poin + " 🎉");
+                tampilkanPesanChat("Tugas selesai! Poin bertambah +" + poin);
             }
         }
 
@@ -1574,131 +1402,62 @@
             if (targetLes && !targetLes.selesai) {
                 targetLes.selesai = true;
                 setLesList(lesList);
-
                 setPoin(getPoin() + poin);
                 renderTugasList();
-                tampilkanPesanChat("Tugas Les/kegiatan hari ini berhasil diselesaikan! Poin bertambah +" + poin + " 🎉");
+                tampilkanPesanChat("Les selesai! Poin bertambah +" + poin);
             }
         }
 
         function triggerSunDialog(jenis) {
-            if (jenis === 'poin') {
-                tampilkanPesanChat("Ini Jumlah poin yang sudah kamu kumpulkan sampai saat ini.");
-            } else if (jenis === 'tugas') {
-                tampilkanPesanChat("Lakukan tugas tugas ini. maka poin kamu akan bertambah. Semangat ya .!!");
-            } else if (jenis === 'larangan') {
-                tampilkanPesanChat("Hati hati.. jika melanggar maka poin yang sudah dikumpulkan bisa berkurang ya..");
-            } else if (jenis === 'hadiah') {
-                tampilkanPesanChat("Poin yang dikumpulkan bisa kamu tukarkan disini.");
-            }
+            if (jenis === 'poin') tampilkanPesanChat("Jumlah poin kamu saat ini.");
+            else if (jenis === 'tugas') tampilkanPesanChat("Lakukan tugas-tugas ini untuk menambah poin.");
+            else if (jenis === 'larangan') tampilkanPesanChat("Jangan lakukan larangan agar poin tidak berkurang.");
+            else if (jenis === 'hadiah') tampilkanPesanChat("Tukarkan poinmu dengan hadiah di sini.");
         }
 
         function bukaHalamanTugas() {
-            animationTimeouts.forEach(t => clearTimeout(t));
-            if (hideBubbleTimeout) clearTimeout(hideBubbleTimeout);
-
             renderTugasList();
             document.body.style.backgroundImage = "url('page.gif')";
             document.getElementById('halaman-kedua').style.display = 'none';
             document.getElementById('halaman-tugas').style.display = 'flex';
-            
-            document.getElementById('sun-character').style.display = 'none';
-            document.getElementById('speech-bubble').style.display = 'none';
-            document.getElementById('sun-character-tugas').style.display = 'none';
-            document.getElementById('speech-bubble-tugas').style.display = 'none';
         }
 
         function bukaHalamanLarangan() {
-            animationTimeouts.forEach(t => clearTimeout(t));
-            if (hideBubbleTimeout) clearTimeout(hideBubbleTimeout);
-
             document.body.style.backgroundImage = "url('page.gif')";
             document.getElementById('halaman-kedua').style.display = 'none';
             document.getElementById('halaman-larangan').style.display = 'flex';
-            
-            document.getElementById('sun-character').style.display = 'none';
-            document.getElementById('speech-bubble').style.display = 'none';
-            document.getElementById('sun-character-larangan').style.display = 'none';
-            document.getElementById('speech-bubble-larangan').style.display = 'none';
         }
 
         function bukaHalamanHadiah() {
-            animationTimeouts.forEach(t => clearTimeout(t));
-            if (hideBubbleTimeout) clearTimeout(hideBubbleTimeout);
-
             updateTampilanHadiah();
             document.body.style.backgroundImage = "url('page.gif')";
             document.getElementById('halaman-kedua').style.display = 'none';
             document.getElementById('halaman-hadiah').style.display = 'flex';
-            
-            document.getElementById('sun-character').style.display = 'none';
-            document.getElementById('speech-bubble').style.display = 'none';
-            document.getElementById('sun-character-hadiah').style.display = 'none';
-            document.getElementById('speech-bubble-hadiah').style.display = 'none';
         }
 
         function kembaliKeKedua() {
-            animationTimeouts.forEach(t => clearTimeout(t));
-            if (hideBubbleTimeout) clearTimeout(hideBubbleTimeout);
-
             document.body.style.backgroundImage = "url('page.gif')";
             document.getElementById('halaman-tugas').style.display = 'none';
             document.getElementById('halaman-kedua').style.display = 'flex';
-            
-            document.getElementById('sun-character').style.display = 'none';
-            document.getElementById('speech-bubble').style.display = 'none';
-            document.getElementById('sun-character-tugas').style.display = 'none';
-            document.getElementById('speech-bubble-tugas').style.display = 'none';
         }
 
         function kembaliKeKeduaDariLarangan() {
-            animationTimeouts.forEach(t => clearTimeout(t));
-            if (hideBubbleTimeout) clearTimeout(hideBubbleTimeout);
-
             document.body.style.backgroundImage = "url('page.gif')";
             document.getElementById('halaman-larangan').style.display = 'none';
             document.getElementById('halaman-kedua').style.display = 'flex';
-            
-            document.getElementById('sun-character').style.display = 'none';
-            document.getElementById('speech-bubble').style.display = 'none';
-            document.getElementById('sun-character-larangan').style.display = 'none';
-            document.getElementById('speech-bubble-larangan').style.display = 'none';
         }
 
         function kembaliKeKeduaDariHadiah() {
-            animationTimeouts.forEach(t => clearTimeout(t));
-            if (hideBubbleTimeout) clearTimeout(hideBubbleTimeout);
-
             document.body.style.backgroundImage = "url('page.gif')";
             document.getElementById('halaman-hadiah').style.display = 'none';
             document.getElementById('halaman-kedua').style.display = 'flex';
-            
-            document.getElementById('sun-character').style.display = 'none';
-            document.getElementById('speech-bubble').style.display = 'none';
-            document.getElementById('sun-character-hadiah').style.display = 'none';
-            document.getElementById('speech-bubble-hadiah').style.display = 'none';
         }
 
         function kembaliKeUtama() {
-            animationTimeouts.forEach(t => clearTimeout(t));
-            if (hideBubbleTimeout) clearTimeout(hideBubbleTimeout);
-
             document.body.style.transition = "none";
             document.body.style.backgroundImage = "url('main.gif')";
             document.getElementById('halaman-kedua').style.display = 'none';
-            document.getElementById('halaman-tugas').style.display = 'none';
-            document.getElementById('halaman-hadiah').style.display = 'none';
-            document.getElementById('halaman-larangan').style.display = 'none';
             document.getElementById('halaman-utama').style.display = 'flex';
-            
-            document.getElementById('sun-character').style.display = 'none';
-            document.getElementById('speech-bubble').style.display = 'none';
-            document.getElementById('sun-character-tugas').style.display = 'none';
-            document.getElementById('speech-bubble-tugas').style.display = 'none';
-            document.getElementById('sun-character-hadiah').style.display = 'none';
-            document.getElementById('speech-bubble-hadiah').style.display = 'none';
-            document.getElementById('sun-character-larangan').style.display = 'none';
-            document.getElementById('speech-bubble-larangan').style.display = 'none';
         }
 
         updateTampilanHadiah();
