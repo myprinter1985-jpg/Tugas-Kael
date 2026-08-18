@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Point Kael</title>
-
     
     <!-- Firebase SDK Compat (Realtime Database) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -875,6 +874,7 @@
         let selesaiListState = [];
         let lesListState = [];
         let bonusClaimedState = false;
+        let lastRecordedDateStr = "";
 
         // Sinkronisasi Real-time dari Firebase Database
         db.ref('kael_data').on('value', (snapshot) => {
@@ -885,6 +885,10 @@
             selesaiListState = data.selesai || [];
             lesListState = data.les_list || [];
             bonusClaimedState = data.bonus_claimed === true;
+            lastRecordedDateStr = data.last_date || "";
+
+            // Cek apakah tanggal database beda dengan tanggal sistem berjalan
+            cekDanResetGantiHari();
 
             updatePoinDisplay();
             updateTampilanHadiah();
@@ -915,6 +919,29 @@
         const namaHariFull = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
         const namaBulanFull = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
 
+        function getTodayKeyStr() {
+            let y = currentCalendarDate.getFullYear();
+            let m = String(currentCalendarDate.getMonth() + 1).padStart(2, '0');
+            let d = String(currentCalendarDate.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        // --- SISTEM PERGANTIAN HARI OTOMATIS ---
+        function cekDanResetGantiHari() {
+            let todayStr = getTodayKeyStr();
+            if (lastRecordedDateStr !== "" && lastRecordedDateStr !== todayStr) {
+                // Hari telah berganti -> Reset tugas harian & daftar les!
+                db.ref('kael_data').update({
+                    selesai: [],
+                    les_list: [],
+                    bonus_claimed: false,
+                    last_date: todayStr
+                });
+            } else if (lastRecordedDateStr === "") {
+                db.ref('kael_data').update({ last_date: todayStr });
+            }
+        }
+
         function getFormattedDateString() {
             let dayName = namaHariFull[currentCalendarDate.getDay()];
             let dayNum = currentCalendarDate.getDate();
@@ -935,17 +962,32 @@
 
         function tambahWaktu15Menit() {
             currentCalendarDate.setMinutes(currentCalendarDate.getMinutes() + 15);
+            cekDanResetGantiHari();
             updateTimeDisplays();
             renderTugasList();
         }
 
         function tambah1Hari() {
             currentCalendarDate.setDate(currentCalendarDate.getDate() + 1);
+            cekDanResetGantiHari();
             updateTimeDisplays();
             renderTugasList();
             let statusLiburPesan = apakahHariLiburNasional() ? " (Hari Libur / Tanggal Merah!)" : "";
             tampilkanPesanChat("Tanggal berganti menjadi " + getFormattedDateString().split(',')[0] + "!" + statusLiburPesan);
         }
+
+        // Pengecekan otomatis realtime tiap 10 detik (saat jam berputar otomatis di latar belakang)
+        setInterval(() => {
+            let oldDateStr = getTodayKeyStr();
+            currentCalendarDate = new Date(); // update waktu nyata
+            if (oldDateStr !== getTodayKeyStr()) {
+                cekDanResetGantiHari();
+                updateTimeDisplays();
+                renderTugasList();
+            } else {
+                updateTimeDisplays();
+            }
+        }, 10000);
 
         // --- FUNGSI CUSTOM POIN (PENGGANTI +25P) ---
         function bukaInputCustomPoin() {
@@ -1288,7 +1330,8 @@
                 les_list: [],
                 uang_akumulasi: 0,
                 mall_dibeli: false,
-                bonus_claimed: false
+                bonus_claimed: false,
+                last_date: getTodayKeyStr()
             });
             updateTimeDisplays();
             tampilkanPesanChat("Data berhasil direset online!");
@@ -1490,7 +1533,6 @@
             document.getElementById('halaman-kedua').style.display = 'none';
             document.getElementById('halaman-utama').style.display = 'flex';
         }
-
 
         updateTampilanHadiah();
         updateTimeDisplays();
