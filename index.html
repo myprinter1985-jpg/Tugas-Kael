@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Point Kael</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Point Kael & Game</title>
     
     <!-- Firebase SDK Compat (Realtime Database) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -56,7 +56,7 @@
             z-index: 30;
         }
 
-        #halaman-kedua, #halaman-tugas, #halaman-hadiah, #halaman-larangan {
+        #halaman-kedua, #halaman-tugas, #halaman-hadiah, #halaman-larangan, #halaman-game {
             display: none;
             z-index: 10;
         }
@@ -68,7 +68,7 @@
             text-align: center;
             letter-spacing: 1px;
             text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.6); 
-            transform: translateY(90px);
+            transform: translateY(65px);
             transition: transform 0.1s ease;
         }
 
@@ -182,7 +182,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             display: none;
             z-index: 25;
-            pointer-events: none;
+            pointer-events: auto; 
         }
 
         .speech-text {
@@ -192,6 +192,7 @@
             letter-spacing: 0.8px;
             line-height: 1.3;
             text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.8);
+            pointer-events: none; 
         }
 
         .content-group {
@@ -552,6 +553,115 @@
             transform: translateX(-50%) translateY(5px);
             box-shadow: 0 0px 0 #0984e3, 0 3px 6px rgba(116, 185, 255, 0.4);
         }
+
+        /* --- STYLING HALAMAN GAME KAEL --- */
+        .game-bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            transition: filter 0.2s ease-in-out;
+        }
+
+        .motion-blur {
+            filter: blur(10px) brightness(1.1);
+            transform: scale(1.03);
+            transition: filter 0.1s ease, transform 0.1s ease;
+        }
+
+        .game-back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background-color: #74b9ff;
+            color: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 900;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 0 #0984e3, 0 6px 10px rgba(0, 0, 0, 0.3);
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .game-back-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #0984e3, 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-top-right-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .game-admin-btn {
+            width: 36px;
+            height: 36px;
+            background-color: #3498db;
+            border: 2px solid #2980b9;
+            border-radius: 50%;
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-weight: 900;
+            font-size: 1rem;
+            box-shadow: 0 3px 0 #2980b9, 0 5px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            outline: none;
+        }
+
+        .game-question-button {
+            width: 36px;
+            height: 36px;
+            background-color: #f1c40f;
+            border: 2px solid #d35400;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-weight: 900;
+            font-size: 1.1rem;
+            box-shadow: 0 3px 0 #d35400, 0 5px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            outline: none;
+        }
+
+        .character-container-game {
+            position: absolute;
+            bottom: 5%; 
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .character-image-game {
+            width: 55vw; 
+            max-width: 450px;
+            height: auto;
+            object-fit: contain;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
 <body>
@@ -567,14 +677,13 @@
             <div class="top-row">
                 <div class="time-indicator" id="display-time-2">Senin, 12:00</div>
                 <div class="btn-small btn-question-icon" onclick="event.stopPropagation(); triggerSunDialog('poin')">?</div>
-                <!-- Developer Tools (Hanya muncul untuk Admin) -->
                 <div id="dev-tools-container" style="display: none; align-items: center; gap: 5px;">
-                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin (Dev Tool)">✕</div>
-                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit (Dev Tool)">+15m</div>
-                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari (Dev Tool)">+1H</div>
-                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); bukaInputCustomPoin()" title="Atur Poin Manual (Dev Tool)">Poin</div>
+                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin">✕</div>
+                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="+15m">+15m</div>
+                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="+1H">+1H</div>
+                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); bukaInputCustomPoin()" title="Poin">Poin</div>
                 </div>
-                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les/kegiatan hari ini">^</div>
+                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les">^</div>
             </div>
             <div class="point-box">
                 <div class="point-value" id="display-poin-2">Poin : 0</div>
@@ -609,6 +718,13 @@
                     </div>
                     <div class="btn-question" onclick="event.stopPropagation(); triggerSunDialog('hadiah')">?</div>
                 </div>
+
+                <div class="menu-btn" onclick="bukaHalamanGame()">
+                    <div class="menu-content-left">
+                        <span class="menu-text">Game</span>
+                    </div>
+                    <div class="btn-question" onclick="event.stopPropagation(); triggerSunDialog('game')">?</div>
+                </div>
             </div>
         </div>
 
@@ -621,14 +737,13 @@
             <div class="top-row">
                 <div class="time-indicator" id="display-time-3">Senin, 12:00</div>
                 <div class="btn-small btn-question-icon" onclick="event.stopPropagation(); triggerSunDialog('poin')">?</div>
-                <!-- Developer Tools Header Tugas -->
                 <div id="dev-tools-container-3" style="display: none; align-items: center; gap: 5px;">
-                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin (Dev Tool)">✕</div>
-                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit (Dev Tool)">+15m</div>
-                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari (Dev Tool)">+1H</div>
-                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); bukaInputCustomPoin()" title="Atur Poin Manual (Dev Tool)">Poin</div>
+                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()">✕</div>
+                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()">+15m</div>
+                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()">+1H</div>
+                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); bukaInputCustomPoin()">Poin</div>
                 </div>
-                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les/kegiatan hari ini">^</div>
+                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()">^</div>
             </div>
             <div class="point-box">
                 <div class="point-value" id="display-poin-3">Poin : 0</div>
@@ -661,14 +776,13 @@
             <div class="top-row">
                 <div class="time-indicator" id="display-time-5">Senin, 12:00</div>
                 <div class="btn-small btn-question-icon" onclick="event.stopPropagation(); triggerSunDialog('poin')">?</div>
-                <!-- Developer Tools Header Larangan -->
                 <div id="dev-tools-container-5" style="display: none; align-items: center; gap: 5px;">
-                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin (Dev Tool)">✕</div>
-                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit (Dev Tool)">+15m</div>
-                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari (Dev Tool)">+1H</div>
-                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); bukaInputCustomPoin()" title="Atur Poin Manual (Dev Tool)">Poin</div>
+                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()">✕</div>
+                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()">+15m</div>
+                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()">+1H</div>
+                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); bukaInputCustomPoin()">Poin</div>
                 </div>
-                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les/kegiatan hari ini">^</div>
+                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()">^</div>
             </div>
             <div class="point-box">
                 <div class="point-value" id="display-poin-5">Poin : 0</div>
@@ -714,14 +828,13 @@
             <div class="top-row">
                 <div class="time-indicator" id="display-time-4">Senin, 12:00</div>
                 <div class="btn-small btn-question-icon" onclick="event.stopPropagation(); triggerSunDialog('poin')">?</div>
-                <!-- Developer Tools Header Hadiah -->
                 <div id="dev-tools-container-4" style="display: none; align-items: center; gap: 5px;">
-                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()" title="Reset Poin (Dev Tool)">✕</div>
-                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()" title="Tambah 15 Menit (Dev Tool)">+15m</div>
-                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()" title="Tambah 1 Hari (Dev Tool)">+1H</div>
-                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); bukaInputCustomPoin()" title="Atur Poin Manual (Dev Tool)">Poin</div>
+                    <div class="btn-small btn-reset-icon" onclick="event.stopPropagation(); resetPoin()">✕</div>
+                    <div class="btn-small btn-action-small" style="background:#3498db; border:2px solid #2980b9;" onclick="event.stopPropagation(); tambahWaktu15Menit()">+15m</div>
+                    <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); tambah1Hari()">+1H</div>
+                    <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); bukaInputCustomPoin()">Poin</div>
                 </div>
-                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les/kegiatan hari ini">^</div>
+                <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()">^</div>
             </div>
             <div class="point-box">
                 <div class="point-value" id="display-poin-4">Poin : 0</div>
@@ -738,7 +851,6 @@
             <h1 class="tugas-title">Hadiah</h1>
             <div class="tugas-list-container">
                 
-                <!-- Hadiah 1 (Uang) -->
                 <div class="hadiah-item-wrapper">
                     <div class="tugas-item" id="item-hadiah-1" onclick="tukarUang()">
                         <div class="tugas-item-top">
@@ -753,7 +865,6 @@
                     </div>
                 </div>
 
-                <!-- Hadiah 2 (Mall) -->
                 <div class="hadiah-item-wrapper">
                     <div class="tugas-item" id="item-hadiah-2" onclick="tukarMall()">
                         <div class="tugas-item-top">
@@ -774,7 +885,26 @@
         <button class="btn-back" onclick="kembaliKeKeduaDariHadiah()">Kembali</button>
     </div>
 
-    <!-- POPUP LOGIN (MASUKKAN PASSWORD ANGKA) -->
+    <!-- HALAMAN GAME KAEL -->
+    <div class="mobile-container" id="halaman-game" style="padding: 0;">
+        <img id="gameBgImage" src="bg.gif" alt="Background" class="game-bg-image">
+
+        <button class="game-back-btn" onclick="kembaliKeKeduaDariGame()">Kembali</button>
+
+        <div class="game-top-right-container">
+            <button id="gameAdminEditBtn" class="game-admin-btn" onclick="bukaInputCustomTugasGame()" title="Atur Tugas Game">&lt;</button>
+            <button class="game-question-button" onclick="tampilkanGamePesan('Lari lari keliling kota kadang bisa dapat tugas tambahan (1 x sehari ).')">?</button>
+        </div>
+
+        <div class="character-container-game">
+            <div id="gameSpeechBubble" class="speech-bubble" style="display: none; position: relative; bottom: 0; margin-bottom: 12px; cursor: pointer;" onclick="klikBubbleTugasGame()">
+                <span id="gameSpeechText" class="speech-text"></span>
+            </div>
+            <img id="gameKaelImage" src="kael.png" alt="Karakter Kael" class="character-image-game">
+        </div>
+    </div>
+
+    <!-- POPUP LOGIN -->
     <div id="login-overlay" class="pin-overlay">
         <div class="pin-modal">
             <div class="pin-title" id="login-modal-title">Masukkan Password</div>
@@ -797,7 +927,7 @@
         </div>
     </div>
 
-    <!-- POPUP INPUT CUSTOM POIN (PENGGANTI +25P) -->
+    <!-- POPUP INPUT CUSTOM POIN -->
     <div id="custom-poin-overlay" class="pin-overlay">
         <div class="pin-modal">
             <div class="pin-title">Masukkan Jumlah Poin</div>
@@ -811,7 +941,25 @@
         </div>
     </div>
 
-    <!-- POPUP PIN (Universal untuk Aksi Lain) -->
+    <!-- POPUP INPUT TUGAS GAME (ADMIN) -->
+    <div id="custom-tugas-game-overlay" class="pin-overlay">
+        <div class="pin-modal">
+            <div class="pin-title">Atur Tugas Game Harian</div>
+            <div style="width: 100%; margin-bottom: 10px;">
+                <input type="text" id="input-custom-tugas-teks" placeholder="Tulis permintaan tugas..." style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #5c3a21; font-family: 'Nunito', sans-serif; font-size: 1rem;">
+            </div>
+            <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 15px;">
+                <input type="number" id="input-custom-tugas-poin" placeholder="Poin" value="5" style="width: 80px; padding: 10px; border-radius: 10px; border: 2px solid #5c3a21; font-family: 'Fredoka One', cursive; font-size: 1rem; text-align: center;">
+                <button class="hadiah-btn-hijau" style="flex: 1; padding: 10px; font-size: 0.9rem;" onclick="resetTugasGameData()">Reset Tugas Game</button>
+            </div>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button class="hadiah-btn-hijau" style="flex: 1; padding: 10px; font-size: 0.9rem;" onclick="simpanCustomTugasGame()">Simpan & Aktifkan</button>
+                <div class="pin-close" style="flex: 1; text-align: center; padding: 8px;" onclick="tutupInputCustomTugasGame()">Batal</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP PIN (Universal) -->
     <div id="pin-overlay" class="pin-overlay">
         <div class="pin-modal">
             <div class="pin-title" id="pin-modal-title">Masukkan PIN Mama</div>
@@ -839,19 +987,18 @@
         <div class="pin-modal" style="max-height: 85vh; overflow-y: auto;">
             <div class="pin-title">Pilih Les/kegiatan hari ini (Maks 3x)</div>
             <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 12px;">
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px;" onclick="pilihJamLes(12, 13)">Les/kegiatan hari ini Jam 12 - 1 (12:00 - 13:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #3498db; border-color: #2980b9;" onclick="pilihJamLes(13, 14)">Les/kegiatan hari ini Jam 1 - 2 (13:00 - 14:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #9b59b6; border-color: #8e44ad;" onclick="pilihJamLes(14, 15)">Les/kegiatan hari ini Jam 2 - 3 (14:00 - 15:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #e67e22; border-color: #d35400;" onclick="pilihJamLes(15, 16)">Les/kegiatan hari ini Jam 3 - 4 (15:00 - 16:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #e74c3c; border-color: #c0392b;" onclick="pilihJamLes(16, 17)">Les/kegiatan hari ini Jam 4 - 5 (16:00 - 17:00)</button>
-                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #1abc9c; border-color: #16a085;" onclick="pilihJamLes(17, 18)">Les/kegiatan hari ini Jam 5 - 6 (17:00 - 18:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px;" onclick="pilihJamLes(12, 13)">Les Jam 12 - 1 (12:00 - 13:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #3498db; border-color: #2980b9;" onclick="pilihJamLes(13, 14)">Les Jam 1 - 2 (13:00 - 14:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #9b59b6; border-color: #8e44ad;" onclick="pilihJamLes(14, 15)">Les Jam 2 - 3 (14:00 - 15:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #e67e22; border-color: #d35400;" onclick="pilihJamLes(15, 16)">Les Jam 3 - 4 (15:00 - 16:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #e74c3c; border-color: #c0392b;" onclick="pilihJamLes(16, 17)">Les Jam 4 - 5 (16:00 - 17:00)</button>
+                <button class="hadiah-btn-hijau" style="padding: 10px; font-size: 0.9rem; border-radius: 12px; background-color: #1abc9c; border-color: #16a085;" onclick="pilihJamLes(17, 18)">Les Jam 5 - 6 (17:00 - 18:00)</button>
             </div>
             <div class="pin-close" onclick="tutupPilihLesModal()">Batal</div>
         </div>
     </div>
 
     <script>
-        // --- KONFIGURASI FIREBASE ANDA ---
         const firebaseConfig = {
             apiKey: "AIzaSyCCDJmLX3P6tOAIOc5qzzgctN1P3HeQTSM",
             authDomain: "sistempoinkael.firebaseapp.com",
@@ -863,11 +1010,9 @@
             measurementId: "G-B7CRRNL5MF"
         };
 
-        // Inisialisasi Firebase Compat
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // State / Variabel Online Real-time
         let poinState = 0;
         let uangAkumulasiState = 0;
         let mallDibeliState = false;
@@ -875,8 +1020,14 @@
         let lesListState = [];
         let bonusClaimedState = false;
         let lastRecordedDateStr = "";
+        
+        let gameTaskState = {
+            text: "",
+            points: 5,
+            active: false,
+            completed: false
+        };
 
-        // Sinkronisasi Real-time dari Firebase Database
         db.ref('kael_data').on('value', (snapshot) => {
             let data = snapshot.val() || {};
             poinState = data.poin || 0;
@@ -886,10 +1037,11 @@
             lesListState = data.les_list || [];
             bonusClaimedState = data.bonus_claimed === true;
             lastRecordedDateStr = data.last_date || "";
+            if (data.game_task) {
+                gameTaskState = data.game_task;
+            }
 
-            // Cek apakah tanggal database beda dengan tanggal sistem berjalan
             cekDanResetGantiHari();
-
             updatePoinDisplay();
             updateTampilanHadiah();
             if (document.getElementById('halaman-tugas').style.display === 'flex') {
@@ -926,15 +1078,19 @@
             return `${y}-${m}-${d}`;
         }
 
-        // --- SISTEM PERGANTIAN HARI OTOMATIS ---
         function cekDanResetGantiHari() {
             let todayStr = getTodayKeyStr();
             if (lastRecordedDateStr !== "" && lastRecordedDateStr !== todayStr) {
-                // Hari telah berganti -> Reset tugas harian & daftar les!
                 db.ref('kael_data').update({
                     selesai: [],
                     les_list: [],
                     bonus_claimed: false,
+                    game_task: {
+                        text: "",
+                        points: 5,
+                        active: false,
+                        completed: false
+                    },
                     last_date: todayStr
                 });
             } else if (lastRecordedDateStr === "") {
@@ -976,10 +1132,9 @@
             tampilkanPesanChat("Tanggal berganti menjadi " + getFormattedDateString().split(',')[0] + "!" + statusLiburPesan);
         }
 
-        // Pengecekan otomatis realtime tiap 10 detik (saat jam berputar otomatis di latar belakang)
         setInterval(() => {
             let oldDateStr = getTodayKeyStr();
-            currentCalendarDate = new Date(); // update waktu nyata
+            currentCalendarDate = new Date();
             if (oldDateStr !== getTodayKeyStr()) {
                 cekDanResetGantiHari();
                 updateTimeDisplays();
@@ -989,7 +1144,6 @@
             }
         }, 10000);
 
-        // --- FUNGSI CUSTOM POIN (PENGGANTI +25P) ---
         function bukaInputCustomPoin() {
             document.getElementById('input-custom-poin').value = getPoin();
             document.getElementById('custom-poin-overlay').style.display = 'flex';
@@ -1008,6 +1162,41 @@
             } else {
                 tampilkanPesanChat("Masukkan angka poin yang valid!");
             }
+        }
+
+        function bukaInputCustomTugasGame() {
+            document.getElementById('input-custom-tugas-teks').value = gameTaskState.text;
+            document.getElementById('input-custom-tugas-poin').value = gameTaskState.points || 5;
+            document.getElementById('custom-tugas-game-overlay').style.display = 'flex';
+        }
+
+        function tutupInputCustomTugasGame() {
+            document.getElementById('custom-tugas-game-overlay').style.display = 'none';
+        }
+
+        function simpanCustomTugasGame() {
+            let tTeks = document.getElementById('input-custom-tugas-teks').value;
+            let tPoin = parseInt(document.getElementById('input-custom-tugas-poin').value);
+            if (tTeks && !isNaN(tPoin)) {
+                gameTaskState.text = tTeks;
+                gameTaskState.points = tPoin;
+                gameTaskState.active = true;
+                gameTaskState.completed = false;
+                db.ref('kael_data').update({ game_task: gameTaskState });
+                tutupInputCustomTugasGame();
+                tampilkanPesanChat("Tugas game berhasil diatur oleh admin!");
+            } else {
+                tampilkanPesanChat("Isi data tugas dengan benar!");
+            }
+        }
+
+        function resetTugasGameData() {
+            gameTaskState.text = "";
+            gameTaskState.active = false;
+            gameTaskState.completed = false;
+            db.ref('kael_data').update({ game_task: gameTaskState });
+            tutupInputCustomTugasGame();
+            tampilkanPesanChat("Tugas game berhasil direset!");
         }
 
         function updateTimeDisplays() {
@@ -1168,6 +1357,14 @@
             document.getElementById('pin-overlay').style.display = 'flex';
         }
 
+        function bukaPinModalGameTask() {
+            activePinAction = 'game_task_complete';
+            currentPinInput = "";
+            document.getElementById('pin-modal-title').innerText = "Masukkan PIN Mama";
+            updatePinDisplay();
+            document.getElementById('pin-overlay').style.display = 'flex';
+        }
+
         function bukaLoginModal() {
             currentLoginInput = "";
             updateLoginDisplay();
@@ -1217,6 +1414,7 @@
             document.getElementById('dev-tools-container-3').style.display = 'flex';
             document.getElementById('dev-tools-container-4').style.display = 'flex';
             document.getElementById('dev-tools-container-5').style.display = 'flex';
+            document.getElementById('gameAdminEditBtn').style.display = 'flex';
         }
 
         function terapkanStatusUser() {
@@ -1224,6 +1422,7 @@
             document.getElementById('dev-tools-container-3').style.display = 'none';
             document.getElementById('dev-tools-container-4').style.display = 'none';
             document.getElementById('dev-tools-container-5').style.display = 'none';
+            document.getElementById('gameAdminEditBtn').style.display = 'none';
         }
 
         function masukKeHalamanKedua() {
@@ -1284,6 +1483,8 @@
                         selesaikanLes(activePinIndex, 5);
                     } else if (activePinAction === 'larangan') {
                         pelanggaranLarangan(activePinIndex);
+                    } else if (activePinAction === 'game_task_complete') {
+                        selesaikanTugasGame();
                     } else if (activePinAction === 'tambah_les') {
                         let lesList = getLesList();
                         if (lesList.length < 3) {
@@ -1331,6 +1532,12 @@
                 uang_akumulasi: 0,
                 mall_dibeli: false,
                 bonus_claimed: false,
+                game_task: {
+                    text: "",
+                    points: 5,
+                    active: false,
+                    completed: false
+                },
                 last_date: getTodayKeyStr()
             });
             updateTimeDisplays();
@@ -1487,6 +1694,7 @@
             else if (jenis === 'tugas') tampilkanPesanChat("Lakukan tugas-tugas ini untuk menambah poin.");
             else if (jenis === 'larangan') tampilkanPesanChat("Jangan lakukan larangan agar poin tidak berkurang.");
             else if (jenis === 'hadiah') tampilkanPesanChat("Tukarkan poinmu dengan hadiah di sini.");
+            else if (jenis === 'game') tampilkanPesanChat("Lari lari keliling kota kadang bisa dapat tugas tambahan (1 x sehari ).");
         }
 
         function bukaHalamanTugas() {
@@ -1508,6 +1716,118 @@
             document.getElementById('halaman-kedua').style.display = 'none';
             document.getElementById('halaman-hadiah').style.display = 'flex';
         }
+
+        // --- GAME KAEL LOGIC ---
+        const gameKael = document.getElementById('gameKaelImage');
+        const gameBg = document.getElementById('gameBgImage');
+        const gameSpeechBubble = document.getElementById('gameSpeechBubble');
+        const gameSpeechText = document.getElementById('gameSpeechText');
+
+        let isGameRunning = false;
+        let gameBubbleTimer = null;
+        const gameBgList = ['bg.gif', 'bg1.gif', 'bg2.gif', 'bg3.gif', 'bg4.gif', 'bg5.gif'];
+        let currentGameBg = 'bg.gif';
+        let gameIdleTimer = null;
+
+        function tampilkanGamePesan(pesan) {
+            clearTimeout(gameBubbleTimer);
+            gameSpeechText.innerText = pesan;
+            gameSpeechBubble.style.display = 'block';
+        }
+
+        function resetGameIdleTimer() {
+            clearTimeout(gameIdleTimer);
+            gameIdleTimer = setTimeout(() => {
+                if (!isGameRunning) {
+                    gameKael.src = 'kaels.png';
+                }
+            }, 1000);
+        }
+
+        function bukaHalamanGame() {
+            document.body.style.backgroundImage = "none";
+            document.body.style.backgroundColor = "#000";
+            document.getElementById('halaman-kedua').style.display = 'none';
+            document.getElementById('halaman-game').style.display = 'flex';
+            gameKael.src = 'kael.png';
+            gameBg.src = 'bg.gif';
+            currentGameBg = 'bg.gif';
+            gameSpeechBubble.style.display = 'none';
+            
+            if (gameTaskState.active && !gameTaskState.completed) {
+                tampilkanGamePesan(gameTaskState.text + " (Ketuk untuk selesaikan pakai PIN!)");
+            }
+
+            resetGameIdleTimer();
+        }
+
+        function kembaliKeKeduaDariGame() {
+            clearTimeout(gameIdleTimer);
+            clearTimeout(gameBubbleTimer);
+            document.body.style.backgroundColor = "";
+            document.body.style.backgroundImage = "url('page.gif')";
+            document.getElementById('halaman-game').style.display = 'none';
+            document.getElementById('halaman-kedua').style.display = 'flex';
+        }
+
+        function klikBubbleTugasGame() {
+            if (gameTaskState.active && !gameTaskState.completed) {
+                bukaPinModalGameTask();
+            }
+        }
+
+        function selesaikanTugasGame() {
+            gameTaskState.completed = true;
+            gameTaskState.active = false;
+            db.ref('kael_data').update({ game_task: gameTaskState });
+            
+            let poinDidapat = gameTaskState.points || 5;
+            setPoin(getPoin() + poinDidapat);
+            
+            // Memunculkan chat bubble di game sesuai jumlah poin yang didapat
+            tampilkanGamePesan("Yey! Tugas game selesai. Poin bertambah +" + poinDidapat + " 🎉");
+        }
+
+        gameKael.addEventListener('click', function() {
+            if (isGameRunning) return;
+            isGameRunning = true;
+            clearTimeout(gameIdleTimer);
+            gameSpeechBubble.style.display = 'none';
+
+            let duration = 1000;
+            let targetBg;
+            do {
+                targetBg = gameBgList[Math.floor(Math.random() * gameBgList.length)];
+            } while (targetBg === currentGameBg && gameBgList.length > 1);
+
+            currentGameBg = targetBg;
+            gameBg.src = targetBg;
+            gameBg.classList.add('motion-blur');
+
+            gameKael.src = 'kael.png';
+            let frameToggle = false;
+            let animInterval = setInterval(() => {
+                gameKael.src = frameToggle ? 'kaelj1.png' : 'kaelj2.png';
+                frameToggle = !frameToggle;
+            }, 100);
+
+            setTimeout(() => {
+                clearInterval(animInterval);
+                gameBg.classList.remove('motion-blur');
+                gameKael.src = 'kael.png';
+                isGameRunning = false;
+                resetGameIdleTimer();
+
+                // Cek status tugas game setelah selesai berlari
+                if (gameTaskState.completed) {
+                    tampilkanGamePesan("Tugas hari ini sudah selesai.");
+                } else if (gameTaskState.active) {
+                    tampilkanGamePesan(gameTaskState.text + " (Ketuk untuk selesaikan!)");
+                } else {
+                    tampilkanGamePesan("Seru sekali larinya!");
+                }
+            }, duration);
+        });
 
         function kembaliKeKedua() {
             document.body.style.backgroundImage = "url('page.gif')";
