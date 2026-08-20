@@ -1013,6 +1013,16 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // --- PRELOADER GAMBAR GAME (Agar langsung siap di HP) ---
+        function preloadGameAssets() {
+            const assets = ['kael.png', 'kaelj1.png', 'kaelj2.png', 'kaels.png'];
+            assets.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        }
+        preloadGameAssets();
+
         let poinState = 0;
         let uangAkumulasiState = 0;
         let mallDibeliState = false;
@@ -1784,11 +1794,12 @@
             let poinDidapat = gameTaskState.points || 5;
             setPoin(getPoin() + poinDidapat);
             
-            // Memunculkan chat bubble di game sesuai jumlah poin yang didapat
             tampilkanGamePesan("Yey! Tugas game selesai. Poin bertambah +" + poinDidapat + " 🎉");
         }
 
-        gameKael.addEventListener('click', function() {
+        // --- FUNGSI UTAMA LARI DENGAN DUKUNGAN TOUCH & INTERVAL OPTIMAL DI HP ---
+        function triggerKaelRun(e) {
+            if (e) e.preventDefault();
             if (isGameRunning) return;
             isGameRunning = true;
             clearTimeout(gameIdleTimer);
@@ -1806,10 +1817,12 @@
 
             gameKael.src = 'kael.png';
             let frameToggle = false;
+            
+            // Interval 150ms lebih stabil dan terbaca dengan baik di HP
             let animInterval = setInterval(() => {
                 gameKael.src = frameToggle ? 'kaelj1.png' : 'kaelj2.png';
                 frameToggle = !frameToggle;
-            }, 100);
+            }, 150);
 
             setTimeout(() => {
                 clearInterval(animInterval);
@@ -1818,7 +1831,6 @@
                 isGameRunning = false;
                 resetGameIdleTimer();
 
-                // Cek status tugas game setelah selesai berlari
                 if (gameTaskState.completed) {
                     tampilkanGamePesan("Tugas hari ini sudah selesai.");
                 } else if (gameTaskState.active) {
@@ -1827,7 +1839,11 @@
                     tampilkanGamePesan("Seru sekali larinya!");
                 }
             }, duration);
-        });
+        }
+
+        // Daftarkan event untuk PC (click) dan HP (touchstart)
+        gameKael.addEventListener('click', triggerKaelRun);
+        gameKael.addEventListener('touchstart', triggerKaelRun, { passive: false });
 
         function kembaliKeKedua() {
             document.body.style.backgroundImage = "url('page.gif')";
