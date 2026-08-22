@@ -56,7 +56,7 @@
             z-index: 30;
         }
 
-        #halaman-kedua, #halaman-tugas, #halaman-hadiah, #halaman-larangan, #halaman-game {
+        #halaman-kedua, #halaman-tugas, #halaman-hadiah, #halaman-larangan, #halaman-game, #halaman-koleksi-item {
             display: none;
             z-index: 10;
         }
@@ -152,6 +152,24 @@
             padding: 0 8px;
             border-radius: 13px;
             font-size: 0.65rem;
+        }
+
+        /* MINI ITEM DI KANAN ATAS HEADER (Hanya di Halaman Koleksi) */
+        .header-item-container {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            max-width: 140px;
+            overflow-x: auto;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 5px;
+            border-radius: 12px;
+        }
+        .header-mini-item {
+            width: 45px;
+            height: auto;
+            object-fit: contain;
+            flex-shrink: 0;
         }
 
         .sun-character {
@@ -430,7 +448,43 @@
             text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.9);
         }
 
-        /* --- POPUP PIN --- */
+        /* GRID HALAMAN KOLEKSI ITEM (1 baris 6 item, ukuran 45px x auto) */
+        .koleksi-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 360px;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-items: center;
+        }
+        .koleksi-slot {
+            width: 45px;
+            height: 45px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+        .koleksi-slot img {
+            width: 45px;
+            height: auto;
+            object-fit: contain;
+        }
+        .koleksi-slot.empty {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        /* --- POPUP ZOOM ITEM & PIN --- */
         .pin-overlay {
             position: absolute;
             top: 0;
@@ -684,6 +738,8 @@
                     <div class="btn-small btn-action-small" style="background:#2ecc71; border:2px solid #27ae60;" onclick="event.stopPropagation(); bukaInputCustomPoin()" title="Poin">Poin</div>
                 </div>
                 <div class="btn-small btn-action-small" style="background:#e67e22; border:2px solid #d35400;" onclick="event.stopPropagation(); bukaMenuPilihLes()" title="Pilih Les">^</div>
+                <!-- Tombol ke Halaman Koleksi Item -->
+                <div class="btn-small btn-action-small" style="background:#9b59b6; border:2px solid #8e44ad;" onclick="event.stopPropagation(); bukaHalamanKoleksiItem()" title="Koleksi Item">🎁</div>
             </div>
             <div class="point-box">
                 <div class="point-value" id="display-poin-2">Poin : 0</div>
@@ -885,6 +941,33 @@
         <button class="btn-back" onclick="kembaliKeKeduaDariHadiah()">Kembali</button>
     </div>
 
+    <!-- HALAMAN KOLEKSI ITEM -->
+    <div class="mobile-container" id="halaman-koleksi-item">
+        <div class="header-wrapper">
+            <div class="top-row">
+                <div class="time-indicator" id="display-time-koleksi">Senin, 12:00</div>
+                <!-- Tombol Reset Item Khusus Admin -->
+                <div class="btn-small btn-reset-icon" id="btn-reset-koleksi-item" style="display: none;" onclick="resetKoleksiItem()" title="Reset Koleksi Item">✕</div>
+                <!-- Tombol Toggle Chance (3% / 50%) Khusus Admin -->
+                <div class="btn-small btn-action-small" id="btn-chance-koleksi-item" style="display: none; background:#3498db; border:2px solid #2980b9;" onclick="toggleChanceItem()" title="Ubah Chance Item">3%</div>
+                <!-- Mini Item di Kanan Atas -->
+                <div class="header-item-container" id="header-item-container"></div>
+            </div>
+            <div class="point-box">
+                <div class="point-value" id="display-poin-koleksi">Poin : 0</div>
+            </div>
+        </div>
+
+        <div class="tugas-content-group">
+            <h1 class="tugas-title">Koleksi Item</h1>
+            <div class="koleksi-grid" id="koleksi-grid-container">
+                <!-- Slot item terjejer rapi 1 baris 6 item -->
+            </div>
+        </div>
+
+        <button class="btn-back" onclick="kembaliKeKeduaDariKoleksi()">Kembali</button>
+    </div>
+
     <!-- HALAMAN GAME KAEL -->
     <div class="mobile-container" id="halaman-game" style="padding: 0;">
         <img id="gameBgImage" src="bg.gif" alt="Background" class="game-bg-image">
@@ -899,8 +982,18 @@
         <div class="character-container-game">
             <div id="gameSpeechBubble" class="speech-bubble" style="display: none; position: relative; bottom: 0; margin-bottom: 12px; cursor: pointer;" onclick="klikBubbleTugasGame()">
                 <span id="gameSpeechText" class="speech-text"></span>
+                <img id="gameSpeechItemImg" src="" alt="Item" style="display: none; width: 35px; height: auto; vertical-align: middle; margin-left: 8px; object-fit: contain;">
             </div>
             <img id="gameKaelImage" src="kael.png" alt="Karakter Kael" class="character-image-game">
+        </div>
+    </div>
+
+    <!-- POPUP ZOOM ITEM -->
+    <div id="zoom-item-overlay" class="pin-overlay" onclick="tutupZoomItem()">
+        <div class="pin-modal" onclick="event.stopPropagation()" style="background: rgba(255,255,255,0.95); max-width: 260px; align-items: center; padding: 20px;">
+            <div class="pin-title" id="zoom-item-title" style="margin-bottom: 10px; text-transform: uppercase;">Detail Item</div>
+            <img id="zoom-item-img" src="" alt="Zoom Item" style="width: 140px; height: auto; object-fit: contain; margin-bottom: 15px;">
+            <div class="pin-close" onclick="tutupZoomItem()">Tutup</div>
         </div>
     </div>
 
@@ -1013,9 +1106,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- PRELOADER GAMBAR GAME (Agar langsung siap di HP) ---
         function preloadGameAssets() {
-            const assets = ['kael.png', 'kaelj1.png', 'kaelj2.png', 'kaels.png'];
+            const assets = ['kael.png', 'kaelj1.png', 'kaelj2.png', 'kaels.png', 'kaeli.png', 'tenda.png', 'kompas.png', 'kamera.png', 'peta.png', 'balon.png', 'paris.png'];
             assets.forEach(src => {
                 const img = new Image();
                 img.src = src;
@@ -1030,7 +1122,19 @@
         let lesListState = [];
         let bonusClaimedState = false;
         let lastRecordedDateStr = "";
+        let collectedItemsState = []; 
+        let itemDropChance = 3; // Default chance normal 3%
+        let lastItemGetDateStr = ""; 
         
+        const daftarMasterItem = [
+            { id: 1, nama: "tenda", file: "tenda.png" },
+            { id: 2, nama: "kompas", file: "kompas.png" },
+            { id: 3, nama: "kamera", file: "kamera.png" },
+            { id: 4, nama: "peta", file: "peta.png" },
+            { id: 5, nama: "balon", file: "balon.png" },
+            { id: 6, nama: "paris", file: "paris.png" }
+        ];
+
         let gameTaskState = {
             text: "",
             points: 5,
@@ -1047,6 +1151,11 @@
             lesListState = data.les_list || [];
             bonusClaimedState = data.bonus_claimed === true;
             lastRecordedDateStr = data.last_date || "";
+            collectedItemsState = data.collected_items || [];
+            lastItemGetDateStr = data.last_item_date || "";
+            if (data.item_chance !== undefined) {
+                itemDropChance = data.item_chance;
+            }
             if (data.game_task) {
                 gameTaskState = data.game_task;
             }
@@ -1054,8 +1163,13 @@
             cekDanResetGantiHari();
             updatePoinDisplay();
             updateTampilanHadiah();
+            updateHeaderMiniItems();
+            updateChanceButtonUI();
             if (document.getElementById('halaman-tugas').style.display === 'flex') {
                 renderTugasList();
+            }
+            if (document.getElementById('halaman-koleksi-item').style.display === 'flex') {
+                renderKoleksiItemGrid();
             }
         });
 
@@ -1215,6 +1329,7 @@
             document.getElementById('display-time-3').innerText = displayText;
             document.getElementById('display-time-4').innerText = displayText;
             document.getElementById('display-time-5').innerText = displayText;
+            document.getElementById('display-time-koleksi').innerText = displayText;
         }
 
         const daftarTugasMaster = [
@@ -1245,6 +1360,21 @@
             document.getElementById('display-poin-3').innerText = "Poin : " + p;
             document.getElementById('display-poin-4').innerText = "Poin : " + p;
             document.getElementById('display-poin-5').innerText = "Poin : " + p;
+            document.getElementById('display-poin-koleksi').innerText = "Poin : " + p;
+        }
+
+        function updateHeaderMiniItems() {
+            const container = document.getElementById('header-item-container');
+            container.innerHTML = "";
+            collectedItemsState.forEach(itemId => {
+                let itemObj = daftarMasterItem.find(i => i.id === itemId);
+                if (itemObj) {
+                    let img = document.createElement('img');
+                    img.src = itemObj.file;
+                    img.className = 'header-mini-item';
+                    container.appendChild(img);
+                }
+            });
         }
 
         function updateTampilanHadiah() {
@@ -1330,6 +1460,28 @@
             else currentUang = 0;
             setAkumulasiUang(currentUang);
             tampilkanPesanChat("Jumlah uang disesuaikan menjadi Rp " + currentUang.toLocaleString('id-ID'));
+        }
+
+        function resetKoleksiItem() {
+            if (isAdmin) {
+                db.ref('kael_data').update({ collected_items: [], last_item_date: "" });
+                tampilkanPesanChat("Koleksi item berhasil direset!");
+            }
+        }
+
+        function toggleChanceItem() {
+            if (isAdmin) {
+                let newChance = (itemDropChance === 3) ? 50 : 3;
+                db.ref('kael_data').update({ item_chance: newChance });
+                tampilkanPesanChat("Chance item diubah menjadi " + newChance + "%");
+            }
+        }
+
+        function updateChanceButtonUI() {
+            const btnChance = document.getElementById('btn-chance-koleksi-item');
+            if (btnChance) {
+                btnChance.innerText = itemDropChance + "%";
+            }
         }
 
         function bukaPinModalReset(jenis) {
@@ -1425,6 +1577,8 @@
             document.getElementById('dev-tools-container-4').style.display = 'flex';
             document.getElementById('dev-tools-container-5').style.display = 'flex';
             document.getElementById('gameAdminEditBtn').style.display = 'flex';
+            document.getElementById('btn-reset-koleksi-item').style.display = 'flex';
+            document.getElementById('btn-chance-koleksi-item').style.display = 'flex';
         }
 
         function terapkanStatusUser() {
@@ -1433,6 +1587,8 @@
             document.getElementById('dev-tools-container-4').style.display = 'none';
             document.getElementById('dev-tools-container-5').style.display = 'none';
             document.getElementById('gameAdminEditBtn').style.display = 'none';
+            document.getElementById('btn-reset-koleksi-item').style.display = 'none';
+            document.getElementById('btn-chance-koleksi-item').style.display = 'none';
         }
 
         function masukKeHalamanKedua() {
@@ -1542,6 +1698,9 @@
                 uang_akumulasi: 0,
                 mall_dibeli: false,
                 bonus_claimed: false,
+                collected_items: [],
+                item_chance: 3,
+                last_item_date: "",
                 game_task: {
                     text: "",
                     points: 5,
@@ -1683,7 +1842,6 @@
                 setTugasSelesaiList(selesaiList);
                 setPoin(getPoin() + poin);
                 renderTugasList();
-                tampilkanPesanChat("Tugas selesai! Poin bertambah +" + poin);
             }
         }
 
@@ -1695,7 +1853,6 @@
                 setLesList(lesList);
                 setPoin(getPoin() + poin);
                 renderTugasList();
-                tampilkanPesanChat("Les selesai! Poin bertambah +" + poin);
             }
         }
 
@@ -1727,11 +1884,56 @@
             document.getElementById('halaman-hadiah').style.display = 'flex';
         }
 
+        function bukaHalamanKoleksiItem() {
+            renderKoleksiItemGrid();
+            document.body.style.backgroundImage = "url('page.gif')";
+            document.getElementById('halaman-kedua').style.display = 'none';
+            document.getElementById('halaman-koleksi-item').style.display = 'flex';
+        }
+
+        function kembaliKeKeduaDariKoleksi() {
+            document.body.style.backgroundImage = "url('page.gif')";
+            document.getElementById('halaman-koleksi-item').style.display = 'none';
+            document.getElementById('halaman-kedua').style.display = 'flex';
+        }
+
+        function renderKoleksiItemGrid() {
+            const gridContainer = document.getElementById('koleksi-grid-container');
+            gridContainer.innerHTML = "";
+            
+            for (let i = 0; i < 6; i++) {
+                let slotDiv = document.createElement('div');
+                slotDiv.className = 'koleksi-slot';
+                
+                let itemData = daftarMasterItem[i];
+                if (itemData && collectedItemsState.includes(itemData.id)) {
+                    let img = document.createElement('img');
+                    img.src = itemData.file;
+                    slotDiv.appendChild(img);
+                    slotDiv.onclick = () => bukaZoomItem(itemData);
+                } else {
+                    slotDiv.classList.add('empty');
+                }
+                gridContainer.appendChild(slotDiv);
+            }
+        }
+
+        function bukaZoomItem(itemData) {
+            document.getElementById('zoom-item-title').innerText = itemData.nama;
+            document.getElementById('zoom-item-img').src = itemData.file;
+            document.getElementById('zoom-item-overlay').style.display = 'flex';
+        }
+
+        function tutupZoomItem() {
+            document.getElementById('zoom-item-overlay').style.display = 'none';
+        }
+
         // --- GAME KAEL LOGIC ---
         const gameKael = document.getElementById('gameKaelImage');
         const gameBg = document.getElementById('gameBgImage');
         const gameSpeechBubble = document.getElementById('gameSpeechBubble');
         const gameSpeechText = document.getElementById('gameSpeechText');
+        const gameSpeechItemImg = document.getElementById('gameSpeechItemImg');
 
         let isGameRunning = false;
         let gameBubbleTimer = null;
@@ -1739,10 +1941,22 @@
         let currentGameBg = 'bg.gif';
         let gameIdleTimer = null;
 
-        function tampilkanGamePesan(pesan) {
+        function tampilkanGamePesan(pesan, itemFile = null) {
             clearTimeout(gameBubbleTimer);
             gameSpeechText.innerText = pesan;
+            if (itemFile) {
+                gameSpeechItemImg.src = itemFile;
+                gameSpeechItemImg.style.display = 'inline-block';
+            } else {
+                gameSpeechItemImg.style.display = 'none';
+            }
             gameSpeechBubble.style.display = 'block';
+
+            gameBubbleTimer = setTimeout(() => {
+                gameSpeechBubble.style.display = 'none';
+                gameSpeechItemImg.style.display = 'none';
+                gameKael.src = 'kael.png';
+            }, 4000);
         }
 
         function resetGameIdleTimer() {
@@ -1763,6 +1977,7 @@
             gameBg.src = 'bg.gif';
             currentGameBg = 'bg.gif';
             gameSpeechBubble.style.display = 'none';
+            gameSpeechItemImg.style.display = 'none';
             
             if (gameTaskState.active && !gameTaskState.completed) {
                 tampilkanGamePesan(gameTaskState.text + " (Ketuk untuk selesaikan pakai PIN!)");
@@ -1797,13 +2012,13 @@
             tampilkanGamePesan("Yey! Tugas game selesai. Poin bertambah +" + poinDidapat + " 🎉");
         }
 
-        // --- FUNGSI UTAMA LARI DENGAN DUKUNGAN TOUCH & INTERVAL OPTIMAL DI HP ---
         function triggerKaelRun(e) {
             if (e) e.preventDefault();
             if (isGameRunning) return;
             isGameRunning = true;
             clearTimeout(gameIdleTimer);
             gameSpeechBubble.style.display = 'none';
+            gameSpeechItemImg.style.display = 'none';
 
             let duration = 1000;
             let targetBg;
@@ -1818,7 +2033,6 @@
             gameKael.src = 'kael.png';
             let frameToggle = false;
             
-            // Interval 150ms lebih stabil dan terbaca dengan baik di HP
             let animInterval = setInterval(() => {
                 gameKael.src = frameToggle ? 'kaelj1.png' : 'kaelj2.png';
                 frameToggle = !frameToggle;
@@ -1827,21 +2041,48 @@
             setTimeout(() => {
                 clearInterval(animInterval);
                 gameBg.classList.remove('motion-blur');
-                gameKael.src = 'kael.png';
                 isGameRunning = false;
                 resetGameIdleTimer();
 
-                if (gameTaskState.completed) {
-                    tampilkanGamePesan("Tugas hari ini sudah selesai.");
-                } else if (gameTaskState.active) {
-                    tampilkanGamePesan(gameTaskState.text + " (Ketuk untuk selesaikan!)");
+                let todayStr = getTodayKeyStr();
+                // Jika 50%, cooldown ganti hari diabaikan (selalu dianggap bisa dapat)
+                let canGetItemToday = (itemDropChance === 50) || (lastItemGetDateStr !== todayStr);
+                let gotItem = null;
+
+                if (canGetItemToday) {
+                    let rollChance = Math.random() * 100;
+                    if (rollChance <= itemDropChance) {
+                        let availableItems = daftarMasterItem.filter(i => !collectedItemsState.includes(i.id));
+                        if (availableItems.length > 0) {
+                            gotItem = availableItems[Math.floor(Math.random() * availableItems.length)];
+                            collectedItemsState.push(gotItem.id);
+                            
+                            let updatePayload = { collected_items: collectedItemsState };
+                            // Hanya simpan tanggal cooldown jika chance 3%
+                            if (itemDropChance !== 50) {
+                                updatePayload.last_item_date = todayStr;
+                            }
+                            db.ref('kael_data').update(updatePayload);
+                        }
+                    }
+                }
+
+                if (gotItem) {
+                    gameKael.src = 'kaeli.png';
+                    tampilkanGamePesan(`Dapat ${gotItem.nama}.!`, gotItem.file);
                 } else {
-                    tampilkanGamePesan("Seru sekali larinya!");
+                    gameKael.src = 'kael.png';
+                    if (gameTaskState.completed) {
+                        tampilkanGamePesan("Tugas hari ini sudah selesai.");
+                    } else if (gameTaskState.active) {
+                        tampilkanGamePesan(gameTaskState.text + " (Ketuk untuk selesaikan!)");
+                    } else {
+                        tampilkanGamePesan("Seru sekali larinya!");
+                    }
                 }
             }, duration);
         }
 
-        // Daftarkan event untuk PC (click) dan HP (touchstart)
         gameKael.addEventListener('click', triggerKaelRun);
         gameKael.addEventListener('touchstart', triggerKaelRun, { passive: false });
 
